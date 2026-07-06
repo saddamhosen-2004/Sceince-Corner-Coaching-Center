@@ -124,7 +124,7 @@ export default function PublicLayout({
           MOBILE TOP BAR
          ============================================= */}
       <div
-        className="md:hidden w-full h-14 fixed top-0 left-0 right-0 z-40 flex items-center justify-between px-4 animate-slide-down"
+        className="md:hidden w-full h-14 fixed top-0 left-0 right-0 z-40 flex items-center justify-between px-4 animate-slide-down rounded-b-2xl"
         style={{
           background: "rgba(245,247,250,0.88)",
           backdropFilter: "blur(16px)",
@@ -238,6 +238,7 @@ export default function PublicLayout({
           style={{
             background: "linear-gradient(to right, #1E2B40, #2F5A8A)",
             borderTop: "1px solid rgba(255,255,255,0.08)",
+            borderRadius: "2rem 2rem 0 0",
           }}
         >
           <div className="space-y-2 px-4">

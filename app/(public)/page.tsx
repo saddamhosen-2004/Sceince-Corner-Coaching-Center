@@ -124,6 +124,7 @@ export default function PublicHomePage() {
         style={{
           minHeight: "460px",
           boxShadow: "0 24px 64px rgba(59,111,168,0.28), 0 4px 16px rgba(59,111,168,0.14)",
+          borderRadius: "0 0 2rem 2rem",
         }}
       >
         {/* ── Full-bleed background image ── */}
