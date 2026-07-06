@@ -166,6 +166,7 @@ ALTER TABLE public.results ENABLE ROW LEVEL SECURITY;
 CREATE TABLE IF NOT EXISTS public.suggestions (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   subject_id UUID REFERENCES public.subjects(id) ON DELETE CASCADE,
+  batch_id UUID REFERENCES public.batches(id) ON DELETE SET NULL,
   exam_name TEXT NOT NULL,
   content_text TEXT,
   file_url TEXT, -- PDF file path in ImageKit

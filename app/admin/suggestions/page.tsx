@@ -23,13 +23,22 @@ interface Subject {
   name: string;
 }
 
+interface Batch {
+  id: string;
+  name: string;
+}
+
 interface Suggestion {
   id: string;
   subject_id: string;
+  batch_id: string | null;
   exam_name: string;
   content_text: string | null;
   file_url: string | null;
   subjects?: {
+    name: string;
+  } | null;
+  batches?: {
     name: string;
   } | null;
 }
@@ -40,6 +49,7 @@ export default function SuggestionsPage() {
 
   const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
   const [subjects, setSubjects] = useState<Subject[]>([]);
+  const [batches, setBatches] = useState<Batch[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
@@ -48,6 +58,7 @@ export default function SuggestionsPage() {
   const [modalOpen, setModalOpen] = useState(false);
   const [editingSuggestion, setEditingSuggestion] = useState<Suggestion | null>(null);
   const [subjectId, setSubjectId] = useState("");
+  const [batchId, setBatchId] = useState("");
   const [examName, setExamName] = useState("");
   const [contentText, setContentText] = useState("");
   const [fileUrl, setFileUrl] = useState<string | null>(null);
@@ -67,7 +78,7 @@ export default function SuggestionsPage() {
       // 1. Fetch suggestions
       const { data: sugData, error: sugErr } = await supabase
         .from("suggestions")
-        .select("*, subjects(name)")
+        .select("*, subjects(name), batches(name)")
         .order("created_at", { ascending: false });
 
       if (sugErr) throw sugErr;
@@ -80,13 +91,23 @@ export default function SuggestionsPage() {
 
       if (subErr) throw subErr;
 
+      // 3. Fetch batches
+      const { data: batchData, error: batchErr } = await supabase
+        .from("batches")
+        .select("id, name")
+        .order("name", { ascending: true });
+
+      if (batchErr) throw batchErr;
+
       const mappedSuggestions = (sugData || []).map((sug: any) => ({
         ...sug,
         subjects: Array.isArray(sug.subjects) ? sug.subjects[0] : sug.subjects,
+        batches: Array.isArray(sug.batches) ? sug.batches[0] : sug.batches,
       }));
 
       setSuggestions(mappedSuggestions);
       setSubjects(subData || []);
+      setBatches(batchData || []);
     } catch (err: any) {
       setError(err.message || "সাজেশন তালিকা লোড করতে সমস্যা হয়েছে।");
     } finally {
@@ -130,6 +151,7 @@ export default function SuggestionsPage() {
   const openAddModal = () => {
     setEditingSuggestion(null);
     setSubjectId("");
+    setBatchId("");
     setExamName("");
     setContentText("");
     setFileUrl(null);
@@ -141,6 +163,7 @@ export default function SuggestionsPage() {
   const openEditModal = (suggestion: Suggestion) => {
     setEditingSuggestion(suggestion);
     setSubjectId(suggestion.subject_id);
+    setBatchId(suggestion.batch_id || "");
     setExamName(suggestion.exam_name);
     setContentText(suggestion.content_text || "");
     setFileUrl(suggestion.file_url);
@@ -164,6 +187,7 @@ export default function SuggestionsPage() {
     try {
       const payload = {
         subject_id: subjectId,
+        batch_id: batchId === "" ? null : batchId,
         exam_name: examName,
         content_text: contentText === "" ? null : contentText,
         file_url: fileUrl,
@@ -272,6 +296,7 @@ export default function SuggestionsPage() {
                   <th className="px-6 py-4">পদক্ষেপ</th>
                   <th className="px-6 py-4">ফাইল লিংক</th>
                   <th className="px-6 py-4">পরীক্ষার নাম</th>
+                  <th className="px-6 py-4">ব্যাচ</th>
                   <th className="px-6 py-4">বিষয়</th>
                 </tr>
               </thead>
@@ -312,6 +337,7 @@ export default function SuggestionsPage() {
                       )}
                     </td>
                     <td className="px-6 py-4 font-semibold text-slate-700">{sug.exam_name}</td>
+                    <td className="px-6 py-4 font-bold text-teal-700">{sug.batches?.name || "সকল ব্যাচ"}</td>
                     <td className="px-6 py-4 font-bold text-slate-900">{sug.subjects?.name}</td>
                   </tr>
                 ))}
@@ -354,7 +380,7 @@ export default function SuggestionsPage() {
                     onChange={(e) => setSubjectId(e.target.value)}
                     className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-slate-800 focus:outline-hidden focus:ring-2 focus:ring-teal-600/20 focus:border-teal-600 transition-all text-xs font-bold"
                   >
-                    <option value="">নির্বাচন করুন</option>
+                    <option value="">বিষয় নির্বাচন করুন</option>
                     {subjects.map((sub) => (
                       <option key={sub.id} value={sub.id}>
                         {sub.name}
@@ -365,17 +391,35 @@ export default function SuggestionsPage() {
 
                 <div>
                   <label className="block text-slate-700 text-xs font-semibold mb-1.5">
-                    পরীক্ষার নাম (যেমন: প্রি-টেস্ট পরীক্ষা / ফাইনাল পরীক্ষা)
+                    ব্যাচ নির্বাচন (ঐচ্ছিক)
                   </label>
-                  <input
-                    type="text"
-                    required
-                    value={examName}
-                    onChange={(e) => setExamName(e.target.value)}
-                    placeholder="যেমন: নির্বাচনী পরীক্ষা"
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-slate-800 placeholder-slate-400 focus:outline-hidden focus:ring-2 focus:ring-teal-600/20 focus:border-teal-600 transition-all text-xs"
-                  />
+                  <select
+                    value={batchId}
+                    onChange={(e) => setBatchId(e.target.value)}
+                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-slate-800 focus:outline-hidden focus:ring-2 focus:ring-teal-600/20 focus:border-teal-600 transition-all text-xs font-bold"
+                  >
+                    <option value="">সকল ব্যাচ</option>
+                    {batches.map((b) => (
+                      <option key={b.id} value={b.id}>
+                        {b.name}
+                      </option>
+                    ))}
+                  </select>
                 </div>
+              </div>
+
+              <div>
+                <label className="block text-slate-700 text-xs font-semibold mb-1.5">
+                  পরীক্ষার নাম (যেমন: প্রি-টেস্ট পরীক্ষা / ফাইনাল পরীক্ষা)
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={examName}
+                  onChange={(e) => setExamName(e.target.value)}
+                  placeholder="যেমন: নির্বাচনী পরীক্ষা"
+                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-slate-800 placeholder-slate-400 focus:outline-hidden focus:ring-2 focus:ring-teal-600/20 focus:border-teal-600 transition-all text-xs"
+                />
               </div>
 
               <div>

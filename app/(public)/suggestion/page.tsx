@@ -2,16 +2,25 @@
 
 import React, { useState, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { Loader2, FileDown, BookOpen, Clock, FileText, ChevronDown, ChevronUp } from "lucide-react";
+import { Loader2, FileDown, BookOpen, Clock, FileText, ChevronDown, ChevronUp, Filter } from "lucide-react";
+
+interface Batch {
+  id: string;
+  name: string;
+}
 
 interface Suggestion {
   id: string;
   subject_id: string;
+  batch_id: string | null;
   exam_name: string;
   content_text: string | null;
   file_url: string | null;
   created_at: string;
   subjects?: {
+    name: string;
+  } | null;
+  batches?: {
     name: string;
   } | null;
 }
@@ -20,8 +29,12 @@ export default function PublicSuggestionsPage() {
   const supabase = createClient();
 
   const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
+  const [batches, setBatches] = useState<Batch[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  
+  // Filters
+  const [filterBatch, setFilterBatch] = useState("");
   
   // Track expanded suggestion text cards
   const [expandedId, setExpandedId] = useState<string | null>(null);
@@ -30,16 +43,30 @@ export default function PublicSuggestionsPage() {
     setLoading(true);
     setError(null);
     try {
-      const { data, error: fetchErr } = await supabase
+      // 1. Fetch suggestions with subjects and batches relations
+      const { data: sugData, error: fetchErr } = await supabase
         .from("suggestions")
-        .select("*, subjects(name)")
+        .select("*, subjects(name), batches(name)")
         .order("created_at", { ascending: false });
 
-      const mapped = (data || []).map((sug: any) => ({
+      if (fetchErr) throw fetchErr;
+
+      // 2. Fetch batches
+      const { data: batchData, error: batchErr } = await supabase
+        .from("batches")
+        .select("id, name")
+        .order("name", { ascending: true });
+
+      if (batchErr) throw batchErr;
+
+      const mapped = (sugData || []).map((sug: any) => ({
         ...sug,
         subjects: Array.isArray(sug.subjects) ? sug.subjects[0] : sug.subjects,
+        batches: Array.isArray(sug.batches) ? sug.batches[0] : sug.batches,
       }));
+
       setSuggestions(mapped);
+      setBatches(batchData || []);
     } catch (err: any) {
       setError(err.message || "সাজেশন তালিকা লোড করতে সমস্যা হয়েছে।");
     } finally {
@@ -55,6 +82,12 @@ export default function PublicSuggestionsPage() {
     setExpandedId(expandedId === id ? null : id);
   };
 
+  // Filter logic: show match or general suggestion
+  const filteredSuggestions = suggestions.filter((sug) => {
+    if (filterBatch === "") return true;
+    return sug.batch_id === filterBatch || sug.batch_id === null;
+  });
+
   return (
     <div className="max-w-5xl mx-auto px-5 py-8 md:py-12">
     <div className="space-y-8 text-left font-sans">
@@ -62,6 +95,30 @@ export default function PublicSuggestionsPage() {
         <h1 className="text-2xl font-black text-slate-800">পরীক্ষার সাজেশন</h1>
         <p className="text-slate-400 text-xs mt-1">এইচএসসি বোর্ড ও অন্যান্য ফাইনাল পরীক্ষার অধ্যায়ভিত্তিক বিশেষ সাজেশন সমূহ</p>
       </div>
+
+      {/* Filters */}
+      {!loading && !error && batches.length > 0 && (
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-4 bg-white border border-slate-200/60 rounded-2xl shadow-xs">
+          <div className="flex items-center justify-start gap-2">
+            <span className="text-slate-400 text-xs shrink-0 flex items-center gap-1 font-semibold">
+              <Filter className="w-3.5 h-3.5" />
+              ব্যাচ ফিল্টার:
+            </span>
+            <select
+              value={filterBatch}
+              onChange={(e) => setFilterBatch(e.target.value)}
+              className="px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-slate-700 focus:outline-hidden focus:ring-2 focus:ring-teal-600/20 focus:border-teal-600 transition-all text-xs font-semibold"
+            >
+              <option value="">সকল ব্যাচ</option>
+              {batches.map((batch) => (
+                <option key={batch.id} value={batch.id}>
+                  {batch.name}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+      )}
 
       {/* Suggestions Roster */}
       {loading ? (
@@ -73,9 +130,9 @@ export default function PublicSuggestionsPage() {
         <div className="p-6 text-center text-rose-600 bg-rose-50 border border-rose-100 rounded-2xl text-xs">
           {error}
         </div>
-      ) : suggestions.length > 0 ? (
+      ) : filteredSuggestions.length > 0 ? (
         <div className="grid grid-cols-1 gap-6 max-w-3xl mx-auto">
-          {suggestions.map((sug) => {
+          {filteredSuggestions.map((sug) => {
             const isExpanded = expandedId === sug.id;
             return (
               <div
@@ -96,6 +153,15 @@ export default function PublicSuggestionsPage() {
                       </h3>
                       <div className="flex items-center gap-3 mt-1.5 text-[10px] text-slate-400">
                         <span>পরীক্ষা: {sug.exam_name}</span>
+                        {sug.batches?.name ? (
+                          <span className="px-1.5 py-0.5 bg-teal-50 border border-teal-100 text-teal-700 rounded-md font-bold text-[9px]">
+                            ব্যাচ: {sug.batches.name}
+                          </span>
+                        ) : (
+                          <span className="px-1.5 py-0.5 bg-slate-50 border border-slate-200 text-slate-500 rounded-md font-semibold text-[9px]">
+                            সাধারণ সাজেশন
+                          </span>
+                        )}
                         <span className="flex items-center gap-1">
                           <Clock className="w-3 h-3" />
                           {new Date(sug.created_at).toLocaleDateString("bn-BD")}
