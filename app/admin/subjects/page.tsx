@@ -223,18 +223,28 @@ export default function SubjectsPage() {
             <p className="text-slate-400 text-sm">বিষয় তালিকা লোড হচ্ছে...</p>
           </div>
         ) : subjects.length > 0 ? (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse text-sm">
+          <div className="overflow-x-auto" dir="ltr">
+            <table className="w-full text-left border-collapse text-sm" dir="ltr">
               <thead>
                 <tr className="bg-slate-50 border-b border-slate-200/60 text-slate-500 font-semibold">
-                  <th className="px-6 py-4">পদক্ষেপ</th>
-                  <th className="px-6 py-4">নিযুক্ত শিক্ষক</th>
                   <th className="px-6 py-4">বিষয়ের নাম</th>
+                  <th className="px-6 py-4">নিযুক্ত শিক্ষক</th>
+                  <th className="px-6 py-4">পদক্ষেপ</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
                 {subjects.map((subject) => (
                   <tr key={subject.id} className="text-slate-700 hover:bg-slate-50/50">
+                    <td className="px-6 py-4 font-bold text-slate-900">{subject.name}</td>
+                    <td className="px-6 py-4 font-medium text-slate-600">
+                      {subject.teachers?.name ? (
+                        <span className="px-2.5 py-1 bg-teal-50 text-teal-700 border border-teal-100 rounded-lg text-xs font-semibold">
+                          {subject.teachers.name}
+                        </span>
+                      ) : (
+                        <span className="text-slate-400 text-xs italic">শিক্ষক নিযুক্ত নেই</span>
+                      )}
+                    </td>
                     <td className="px-6 py-4">
                       <div className="flex items-center justify-start gap-2">
                         <button
@@ -253,16 +263,6 @@ export default function SubjectsPage() {
                         </button>
                       </div>
                     </td>
-                    <td className="px-6 py-4 font-medium text-slate-600">
-                      {subject.teachers?.name ? (
-                        <span className="px-2.5 py-1 bg-teal-50 text-teal-700 border border-teal-100 rounded-lg text-xs font-semibold">
-                          {subject.teachers.name}
-                        </span>
-                      ) : (
-                        <span className="text-slate-400 text-xs italic">শিক্ষক নিযুক্ত নেই</span>
-                      )}
-                    </td>
-                    <td className="px-6 py-4 font-bold text-slate-900">{subject.name}</td>
                   </tr>
                 ))}
               </tbody>

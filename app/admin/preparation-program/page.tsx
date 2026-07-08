@@ -317,10 +317,21 @@ export default function PreparationProgramPage() {
                       className={`p-4 flex items-center justify-between cursor-pointer transition-all hover:bg-slate-50 text-left ${
                         isSelected ? "bg-slate-50 border-r-4 border-teal-600" : ""
                       }`}
+                      dir="ltr"
                     >
-                      <div className="flex items-center gap-1.5">
+                      <div className="flex-1 text-left">
+                        <h4 className="font-bold text-slate-900 text-xs leading-snug">
+                          {prog.program_name}
+                        </h4>
+                        <span className="inline-flex items-center gap-1 text-[10px] text-slate-400 mt-1">
+                          <Target className="w-3 h-3 text-teal-600 shrink-0" />
+                          সেশন: {prog.session_year}
+                        </span>
+                      </div>
+
+                      <div className="flex items-center gap-1.5 shrink-0" dir="ltr">
                         <button
-                          onClick={() => openProgramModal(prog)}
+                          onClick={(e) => { e.stopPropagation(); openProgramModal(prog); }}
                           className="p-1 hover:bg-slate-200 hover:text-teal-600 rounded text-slate-400"
                         >
                           <Pencil className="w-3.5 h-3.5" />
@@ -332,16 +343,6 @@ export default function PreparationProgramPage() {
                           <Trash2 className="w-3.5 h-3.5" />
                         </button>
                         <ChevronRight className="w-4 h-4 text-slate-400 ml-1" />
-                      </div>
-
-                      <div>
-                        <h4 className="font-bold text-slate-900 text-xs leading-snug">
-                          {prog.program_name}
-                        </h4>
-                        <span className="inline-flex items-center gap-1 text-[10px] text-slate-400 mt-1">
-                          <Target className="w-3 h-3 text-teal-600 shrink-0" />
-                          সেশন: {prog.session_year}
-                        </span>
                       </div>
                     </div>
                   );
@@ -403,27 +404,27 @@ export default function PreparationProgramPage() {
                     <p className="text-slate-400 text-xs font-medium">ভর্তি ডাটা লোড হচ্ছে...</p>
                   </div>
                 ) : enrollments.length > 0 ? (
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-left border-collapse text-xs">
+                  <div className="overflow-x-auto" dir="ltr">
+                    <table className="w-full text-left border-collapse text-xs" dir="ltr">
                       <thead>
                         <tr className="border-b border-slate-100 text-slate-400 font-semibold">
-                          <th className="pb-3 text-left">ভর্তির তারিখ</th>
-                          <th className="pb-3 text-left">পরিশোধিত টাকা</th>
-                          <th className="pb-3 text-left">মোবাইল নম্বর</th>
                           <th className="pb-3 text-left">শিক্ষার্থীর নাম</th>
+                          <th className="pb-3 text-left">মোবাইল নম্বর</th>
+                          <th className="pb-3 text-left">পরিশোধিত টাকা</th>
+                          <th className="pb-3 text-left">ভর্তির তারিখ</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-slate-50">
                         {enrollments.map((enr) => (
                           <tr key={enr.id} className="text-slate-700 hover:bg-slate-50/50">
-                            <td className="py-3 text-slate-500">
-                              {new Date(enr.enrollment_date).toLocaleDateString("bn-BD")}
-                            </td>
+                            <td className="py-3 font-bold text-slate-900">{enr.student_name}</td>
+                            <td className="py-3 font-mono text-slate-500">{enr.guardian_phone}</td>
                             <td className="py-3 font-bold text-slate-900">
                               ৳ {Number(enr.amount_paid).toLocaleString("bn-BD")}
                             </td>
-                            <td className="py-3 font-mono text-slate-500">{enr.guardian_phone}</td>
-                            <td className="py-3 font-bold text-slate-900">{enr.student_name}</td>
+                            <td className="py-3 text-slate-500">
+                              {new Date(enr.enrollment_date).toLocaleDateString("bn-BD")}
+                            </td>
                           </tr>
                         ))}
                       </tbody>
