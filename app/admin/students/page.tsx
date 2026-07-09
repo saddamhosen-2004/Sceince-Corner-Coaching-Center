@@ -440,67 +440,147 @@ export default function StudentsPage() {
           <p className="text-slate-400 text-sm">শিক্ষার্থী তালিকা লোড হচ্ছে...</p>
         </div>
       ) : filteredStudents.length > 0 ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
-          {filteredStudents.map((student) => (
-            <div
-              key={student.id}
-              onClick={() => openProfileOverlay(student)}
-              className="bg-white border border-slate-200/60 rounded-2xl p-5 shadow-xs hover:shadow-md hover:scale-[1.01] transition-all cursor-pointer flex gap-4 group"
-            >
-              {/* Photo */}
-              <div className="w-20 h-20 rounded-xl overflow-hidden relative bg-slate-100 shrink-0 border border-slate-100">
-                {student.photo_url ? (
-                  <Image
-                    src={student.photo_url}
-                    alt={student.name}
-                    fill
-                    className="object-cover"
-                  />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center text-slate-300">
-                    <User className="w-10 h-10" />
-                  </div>
-                )}
-              </div>
-
-              {/* Basic Details */}
-              <div className="flex-1 min-w-0 flex flex-col justify-between text-left">
-                <div>
-                  <div className="flex items-center justify-end gap-1.5">
-                    <span className="px-2 py-0.5 bg-teal-50 text-teal-700 border border-teal-100 rounded-md text-[10px] font-bold">
-                      {student.student_id}
-                    </span>
-                    <h4 className="font-bold text-slate-900 text-sm truncate">
-                      {student.name}
-                    </h4>
-                  </div>
-                  <p className="text-[11px] text-slate-500 mt-1 truncate">
-                    {student.college_name} • {student.college_year}
-                  </p>
-                  <p className="text-[11px] text-slate-400 mt-0.5 truncate">
-                    ব্যাচ: {student.batches?.name || "নির্ধারিত নেই"}
-                  </p>
-                </div>
-
-                {/* Card footer actions */}
-                <div className="flex items-center justify-start gap-2 pt-2 border-t border-slate-50 mt-2">
-                  <button
-                    onClick={(e) => openEditModal(e, student)}
-                    className="p-1 hover:bg-slate-100 hover:text-teal-600 rounded text-slate-400 transition-colors"
-                  >
-                    <Pencil className="w-3.5 h-3.5" />
-                  </button>
-                  <button
-                    onClick={(e) => openDeleteConfirm(e, student)}
-                    className="p-1 hover:bg-slate-100 hover:text-rose-600 rounded text-slate-400 transition-colors"
-                  >
-                    <Trash2 className="w-3.5 h-3.5" />
-                  </button>
-                </div>
-              </div>
+        <>
+          {/* Desktop Table / List Format */}
+          <div className="hidden md:block bg-white border border-slate-200/60 rounded-2xl shadow-xs overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse text-xs">
+                <thead>
+                  <tr className="bg-slate-50 border-b border-slate-200 text-slate-500 font-semibold">
+                    <th className="px-5 py-3 text-left">ছবি</th>
+                    <th className="px-5 py-3 text-left">রোল আইডি</th>
+                    <th className="px-5 py-3 text-left">নাম</th>
+                    <th className="px-5 py-3 text-left">কলেজ ও বর্ষ</th>
+                    <th className="px-5 py-3 text-left">ব্যাচ</th>
+                    <th className="px-5 py-3 text-center">অ্যাকশন</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {filteredStudents.map((student) => (
+                    <tr
+                      key={student.id}
+                      onClick={() => openProfileOverlay(student)}
+                      className="hover:bg-slate-50/50 cursor-pointer transition-colors"
+                    >
+                      <td className="px-5 py-3.5">
+                        <div className="w-10 h-10 rounded-lg overflow-hidden relative bg-slate-100 border border-slate-100">
+                          {student.photo_url ? (
+                            <Image
+                              src={student.photo_url}
+                              alt={student.name}
+                              fill
+                              className="object-cover"
+                            />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center text-slate-300">
+                              <User className="w-5 h-5" />
+                            </div>
+                          )}
+                        </div>
+                      </td>
+                      <td className="px-5 py-3.5">
+                        <span className="px-2.5 py-0.5 bg-teal-50 text-teal-700 border border-teal-100 rounded-md text-[10px] font-bold font-mono">
+                          {student.student_id}
+                        </span>
+                      </td>
+                      <td className="px-5 py-3.5 font-bold text-slate-900 text-sm">
+                        {student.name}
+                      </td>
+                      <td className="px-5 py-3.5 text-slate-600">
+                        <div className="font-semibold">{student.college_name}</div>
+                        <div className="text-[10px] text-slate-400 mt-0.5">{student.college_year}</div>
+                      </td>
+                      <td className="px-5 py-3.5 text-slate-600 font-medium">
+                        {student.batches?.name || <span className="text-slate-400 italic font-normal">নির্ধারিত নেই</span>}
+                      </td>
+                      <td className="px-5 py-3.5 text-center">
+                        <div className="flex items-center justify-center gap-2" onClick={(e) => e.stopPropagation()}>
+                          <button
+                            onClick={(e) => openEditModal(e, student)}
+                            className="p-1.5 hover:bg-slate-100 hover:text-teal-600 rounded-lg text-slate-400 transition-colors"
+                            title="সংশোধন"
+                          >
+                            <Pencil className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={(e) => openDeleteConfirm(e, student)}
+                            className="p-1.5 hover:bg-slate-100 hover:text-rose-600 rounded-lg text-slate-400 transition-colors"
+                            title="মুছে ফেলুন"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
-          ))}
-        </div>
+          </div>
+
+          {/* Mobile Card Format */}
+          <div className="md:hidden grid grid-cols-1 sm:grid-cols-2 gap-6">
+            {filteredStudents.map((student) => (
+              <div
+                key={student.id}
+                onClick={() => openProfileOverlay(student)}
+                className="bg-white border border-slate-200/60 rounded-2xl p-5 shadow-xs transition-all cursor-pointer flex gap-4 group"
+              >
+                {/* Photo */}
+                <div className="w-20 h-20 rounded-xl overflow-hidden relative bg-slate-100 shrink-0 border border-slate-100">
+                  {student.photo_url ? (
+                    <Image
+                      src={student.photo_url}
+                      alt={student.name}
+                      fill
+                      className="object-cover"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center text-slate-300">
+                      <User className="w-10 h-10" />
+                    </div>
+                  )}
+                </div>
+
+                {/* Basic Details */}
+                <div className="flex-1 min-w-0 flex flex-col justify-between text-left">
+                  <div>
+                    <div className="flex items-center justify-end gap-1.5">
+                      <span className="px-2 py-0.5 bg-teal-50 text-teal-700 border border-teal-100 rounded-md text-[10px] font-bold">
+                        {student.student_id}
+                      </span>
+                      <h4 className="font-bold text-slate-900 text-sm truncate">
+                        {student.name}
+                      </h4>
+                    </div>
+                    <p className="text-[11px] text-slate-500 mt-1 truncate">
+                      {student.college_name} • {student.college_year}
+                    </p>
+                    <p className="text-[11px] text-slate-400 mt-0.5 truncate">
+                      ব্যাচ: {student.batches?.name || "নির্ধারিত নেই"}
+                    </p>
+                  </div>
+
+                  {/* Card footer actions */}
+                  <div className="flex items-center justify-start gap-2 pt-2 border-t border-slate-50 mt-2">
+                    <button
+                      onClick={(e) => openEditModal(e, student)}
+                      className="p-1 hover:bg-slate-100 hover:text-teal-600 rounded text-slate-400 transition-colors"
+                    >
+                      <Pencil className="w-3.5 h-3.5" />
+                    </button>
+                    <button
+                      onClick={(e) => openDeleteConfirm(e, student)}
+                      className="p-1 hover:bg-slate-100 hover:text-rose-600 rounded text-slate-400 transition-colors"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </>
       ) : (
         <div className="py-20 text-center text-slate-400 text-sm bg-white border border-slate-200/60 rounded-2xl shadow-xs">
           কোন শিক্ষার্থী পাওয়া যায়নি।

@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import Image from "next/image";
 import {
   LayoutDashboard,
   Users,
@@ -27,6 +28,7 @@ import {
   Loader2,
   LayoutList,
   CalendarCheck,
+  Eye,
 } from "lucide-react";
 
 export default function AdminLayout({
@@ -42,6 +44,7 @@ export default function AdminLayout({
   const [financeOpen, setFinanceOpen] = useState(false);
   const [userEmail, setUserEmail] = useState<string | null>(null);
   const [loggingOut, setLoggingOut] = useState(false);
+  const [logoUrl, setLogoUrl] = useState<string | null>(null);
 
   useEffect(() => {
     // Get logged-in user email
@@ -54,6 +57,34 @@ export default function AdminLayout({
       }
     };
     getUser();
+
+    // Get institutional settings
+    const fetchSettings = async () => {
+      try {
+        const { data } = await supabase
+          .from("site_settings")
+          .select("key, value");
+        if (data) {
+          const logo = data.find(s => s.key === "logo_url")?.value || null;
+          const favicon = data.find(s => s.key === "favicon_url")?.value || null;
+          setLogoUrl(logo);
+
+          // Dynamically update head favicon tag on mount
+          if (favicon) {
+            let link: HTMLLinkElement | null = document.querySelector("link[rel='icon']");
+            if (!link) {
+              link = document.createElement("link");
+              link.rel = "icon";
+              document.head.appendChild(link);
+            }
+            link.href = favicon;
+          }
+        }
+      } catch (err) {
+        console.error("Error loading admin settings:", err);
+      }
+    };
+    fetchSettings();
 
     // Auto-expand finance tab if inside /finance path
     if (pathname.startsWith("/admin/finance")) {
@@ -112,9 +143,21 @@ export default function AdminLayout({
         {/* Brand Logo Header */}
         <div className="flex items-center justify-between h-16 px-6 bg-slate-950 border-b border-slate-800">
           <Link href="/admin/dashboard" className="flex items-center gap-3">
-            <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-teal-500 text-white font-bold">
-              ম
-            </div>
+            {logoUrl ? (
+              <div className="relative w-8 h-8 rounded-lg overflow-hidden shrink-0">
+                <Image
+                  src={logoUrl}
+                  alt="Logo"
+                  fill
+                  className="object-cover"
+                  unoptimized
+                />
+              </div>
+            ) : (
+              <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-teal-500 text-white font-bold shrink-0">
+                ম
+              </div>
+            )}
             <span className="font-bold text-md text-white tracking-wide">
               মানবিক কলেজ কোচিং সেন্টার
             </span>
@@ -279,9 +322,10 @@ export default function AdminLayout({
             <Link
               href="/"
               target="_blank"
-              className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg text-xs font-semibold transition-all"
+              className="inline-flex items-center justify-center w-9 h-9 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-xl transition-all"
+              title="ওয়েবসাইট দেখুন"
             >
-              <span>ওয়েবসাইট দেখুন</span>
+              <Eye className="w-4 h-4" />
             </Link>
           </div>
         </header>

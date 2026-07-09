@@ -1,9 +1,11 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Menu, X, GraduationCap, LayoutDashboard, Sparkles } from "lucide-react";
+import { createClient } from "@/lib/supabase/client";
+import Image from "next/image";
 
 export default function PublicLayout({
   children,
@@ -12,10 +14,45 @@ export default function PublicLayout({
 }) {
   const pathname = usePathname();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [logoUrl, setLogoUrl] = useState<string | null>(null);
+  const [hidePublicStudents, setHidePublicStudents] = useState<boolean>(false);
+
+  useEffect(() => {
+    const supabase = createClient();
+    const fetchSettings = async () => {
+      try {
+        const { data } = await supabase
+          .from("site_settings")
+          .select("key, value");
+        if (data) {
+          const logo = data.find(s => s.key === "logo_url")?.value || null;
+          const favicon = data.find(s => s.key === "favicon_url")?.value || null;
+          const hideStudents = data.find(s => s.key === "hide_public_students")?.value === "true";
+          
+          setLogoUrl(logo);
+          setHidePublicStudents(hideStudents);
+
+          // Dynamically update head favicon tag on mount
+          if (favicon) {
+            let link: HTMLLinkElement | null = document.querySelector("link[rel='icon']");
+            if (!link) {
+              link = document.createElement("link");
+              link.rel = "icon";
+              document.head.appendChild(link);
+            }
+            link.href = favicon;
+          }
+        }
+      } catch (err) {
+        console.error("Error loading settings:", err);
+      }
+    };
+    fetchSettings();
+  }, []);
 
   const menuItems = [
     { name: "হোম",              href: "/" },
-    { name: "শিক্ষার্থী তালিকা", href: "/students" },
+    ...(!hidePublicStudents ? [{ name: "শিক্ষার্থী তালিকা", href: "/students" }] : []),
     { name: "শিক্ষক মণ্ডলী",    href: "/teachers" },
     { name: "পরিচালকবৃন্দ",      href: "/directors" },
     { name: "ক্লাস রুটিন",       href: "/routine" },
@@ -49,11 +86,23 @@ export default function PublicLayout({
         <div className="h-16 px-5 flex items-center gap-3 relative z-10"
           style={{ borderBottom: "1px solid rgba(255,255,255,0.12)" }}
         >
-          <div className="flex items-center justify-center w-9 h-9 rounded-xl shrink-0"
-            style={{ background: "rgba(255,255,255,0.18)", backdropFilter: "blur(8px)" }}
-          >
-            <GraduationCap className="w-5 h-5 text-white" />
-          </div>
+          {logoUrl ? (
+            <div className="relative w-9 h-9 rounded-xl overflow-hidden shrink-0">
+              <Image
+                src={logoUrl}
+                alt="Logo"
+                fill
+                className="object-cover"
+                unoptimized
+              />
+            </div>
+          ) : (
+            <div className="flex items-center justify-center w-9 h-9 rounded-xl shrink-0"
+              style={{ background: "rgba(255,255,255,0.18)", backdropFilter: "blur(8px)" }}
+            >
+              <GraduationCap className="w-5 h-5 text-white" />
+            </div>
+          )}
           <span className="font-extrabold text-xs text-white leading-snug">
             মানবিক কলেজ কোচিং সেন্টার
           </span>
@@ -133,11 +182,23 @@ export default function PublicLayout({
         }}
       >
         <Link href="/" className="flex items-center gap-2.5">
-          <div className="flex items-center justify-center w-8 h-8 rounded-lg"
-            style={{ background: "#3B6FA8" }}
-          >
-            <GraduationCap className="w-4.5 h-4.5 text-white" />
-          </div>
+          {logoUrl ? (
+            <div className="relative w-8 h-8 rounded-lg overflow-hidden shrink-0">
+              <Image
+                src={logoUrl}
+                alt="Logo"
+                fill
+                className="object-cover"
+                unoptimized
+              />
+            </div>
+          ) : (
+            <div className="flex items-center justify-center w-8 h-8 rounded-lg"
+              style={{ background: "#3B6FA8" }}
+            >
+              <GraduationCap className="w-4.5 h-4.5 text-white" />
+            </div>
+          )}
           <span className="font-extrabold text-xs" style={{ color: "#2F5A8A" }}>
             মানবিক কলেজ কোচিং সেন্টার
           </span>
@@ -243,11 +304,24 @@ export default function PublicLayout({
         >
           <div className="space-y-2 px-4">
             <div className="flex items-center justify-center gap-2 mb-3">
-              <div className="w-8 h-8 rounded-lg flex items-center justify-center"
-                style={{ background: "rgba(255,255,255,0.12)" }}
-              >
-                <GraduationCap className="w-4 h-4 text-white" />
-              </div>
+              {logoUrl ? (
+                <div className="relative w-8 h-8 rounded-lg overflow-hidden bg-white/10 p-0.5 flex items-center justify-center shrink-0">
+                  <Image
+                    src={logoUrl}
+                    alt="Logo"
+                    width={28}
+                    height={28}
+                    className="object-contain"
+                    unoptimized
+                  />
+                </div>
+              ) : (
+                <div className="w-8 h-8 rounded-lg flex items-center justify-center"
+                  style={{ background: "rgba(255,255,255,0.12)" }}
+                >
+                  <GraduationCap className="w-4 h-4 text-white" />
+                </div>
+              )}
             </div>
             <p className="text-xs font-bold text-white">মানবিক কলেজ কোচিং সেন্টার</p>
             <p className="text-[10px]" style={{ color: "#E2E8F0" }}>

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { Search, Loader2, FileBadge, AlertCircle, Printer, Download, BookOpen } from "lucide-react";
 import { toPng } from "html-to-image";
@@ -14,6 +14,7 @@ interface MarksheetRecord {
   marks_obtained: number;
   student_name: string;
   student_roll: string;
+  student_rank: number;
 }
 
 export default function PublicResultSearchPage() {
@@ -24,6 +25,25 @@ export default function PublicResultSearchPage() {
   const [records, setRecords] = useState<MarksheetRecord[]>([]);
   const [searched, setSearched] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [logoUrl, setLogoUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchLogo = async () => {
+      try {
+        const { data: logoData } = await supabase
+          .from("site_settings")
+          .select("value")
+          .eq("key", "logo_url")
+          .single();
+        if (logoData?.value) {
+          setLogoUrl(logoData.value);
+        }
+      } catch (err) {
+        console.error("Failed to load logo in result:", err);
+      }
+    };
+    fetchLogo();
+  }, []);
 
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -69,6 +89,15 @@ export default function PublicResultSearchPage() {
     try {
       const dataUrl = await toPng(element, {
         backgroundColor: "#ffffff",
+        width: 720,
+        style: {
+          width: "720px",
+          margin: "0px",
+          padding: "32px",
+          borderRadius: "0px",
+          boxShadow: "none",
+          border: "none",
+        },
         filter: (node: any) => {
           if (node.classList && node.classList.contains("exclude-from-image")) {
             return false;
@@ -89,6 +118,27 @@ export default function PublicResultSearchPage() {
     }
   };
 
+  const formatRankBengali = (rank: number) => {
+    const bnNums = ["০", "১", "২", "৩", "৪", "৫", "৬", "৭", "৮", "৯"];
+    const toBn = (num: number) =>
+      String(num)
+        .split("")
+        .map(d => bnNums[Number(d)] || d)
+        .join("");
+
+    if (rank === 1) return "১ম";
+    if (rank === 2) return "২য়";
+    if (rank === 3) return "৩য়";
+    if (rank === 4) return "৪র্থ";
+    if (rank === 5) return "৫ম";
+    if (rank === 6) return "৬ষ্ঠ";
+    if (rank === 7) return "৭ম";
+    if (rank === 8) return "৮ম";
+    if (rank === 9) return "৯ম";
+    if (rank === 10) return "১০ম";
+    return `${toBn(rank)}তম`;
+  };
+
   // Group records by exam name so we can render multiple exam marksheet cards
   const examsGrouped = records.reduce((acc, curr) => {
     if (!acc[curr.exam_name]) {
@@ -97,6 +147,7 @@ export default function PublicResultSearchPage() {
         total_marks: curr.total_marks,
         student_name: curr.student_name,
         student_roll: curr.student_roll,
+        student_rank: curr.student_rank,
         subjects: [],
       };
     }
@@ -105,7 +156,7 @@ export default function PublicResultSearchPage() {
       marks_obtained: curr.marks_obtained,
     });
     return acc;
-  }, {} as Record<string, { exam_date: string; total_marks: number; student_name: string; student_roll: string; subjects: Array<{ subject_name: string; marks_obtained: number }> }>);
+  }, {} as Record<string, { exam_date: string; total_marks: number; student_name: string; student_roll: string; student_rank: number; subjects: Array<{ subject_name: string; marks_obtained: number }> }>);
 
   return (
     <div className="max-w-5xl mx-auto px-5 py-8 md:py-12">
@@ -199,17 +250,31 @@ export default function PublicResultSearchPage() {
                         <span>ইমেজ ডাউনলোড</span>
                       </button>
                     </div>
+
                     {/* Header */}
-                    <div className="text-center pb-4 border-b-2 border-slate-800 space-y-1">
+                    <div className="text-center pb-4 border-b-2 border-slate-800 space-y-1.5 flex flex-col items-center">
+                      {logoUrl ? (
+                        <div className="relative w-14 h-14 rounded-2xl overflow-hidden bg-white border border-slate-200/60 p-1 flex items-center justify-center shrink-0 mb-1">
+                          <img
+                            src={logoUrl}
+                            alt="Logo"
+                            className="w-full h-full object-contain"
+                          />
+                        </div>
+                      ) : (
+                        <div className="flex items-center justify-center w-12 h-12 rounded-2xl bg-teal-600 text-white font-bold text-xl shrink-0 mb-1">
+                          ম
+                        </div>
+                      )}
                       <h2 className="text-lg font-black text-slate-800">মানবিক কলেজ কোচিং সেন্টার</h2>
                       <p className="text-slate-500 text-[10px]">শিক্ষা ও অগ্রগতির পথে আমাদের যাত্রা</p>
-                      <h3 className="font-bold text-teal-700 text-xs mt-3 pt-1 border-t border-slate-100">
+                      <h3 className="font-bold text-teal-700 text-xs mt-3 pt-1 border-t border-slate-100 w-full">
                         একাডেমিক ট্রান্সক্রিপ্ট / মার্কশিট
                       </h3>
                     </div>
 
                     {/* Meta info columns */}
-                    <div className="grid grid-cols-2 gap-4 text-xs pt-2">
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 text-xs pt-2">
                       <div>
                         <span className="text-slate-400 block mb-0.5">পরীক্ষার নাম:</span>
                         <span className="font-bold text-slate-800">{examName}</span>
@@ -217,6 +282,12 @@ export default function PublicResultSearchPage() {
                       <div>
                         <span className="text-slate-400 block mb-0.5">শিক্ষার্থীর নাম:</span>
                         <span className="font-bold text-slate-800">{data.student_name}</span>
+                      </div>
+                      <div>
+                        <span className="text-slate-400 block mb-0.5">মেধা স্থান (Rank):</span>
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-lg font-extrabold text-xs bg-amber-50 text-amber-700 border border-amber-200">
+                          {formatRankBengali(data.student_rank)}
+                        </span>
                       </div>
                       <div>
                         <span className="text-slate-400 block mb-0.5">তারিখ:</span>
@@ -235,10 +306,10 @@ export default function PublicResultSearchPage() {
                       <table className="w-full text-left border-collapse text-xs">
                         <thead>
                           <tr className="bg-slate-50 border-b border-slate-200 text-slate-500 font-semibold">
-                            <th className="px-4 py-2">বিষয়</th>
-                            <th className="px-4 py-2">পূর্ণমান</th>
-                            <th className="px-4 py-2">প্রাপ্ত নম্বর</th>
-                            <th className="px-4 py-2">মন্তব্য</th>
+                            <th className="px-4 py-2 text-left">বিষয়</th>
+                            <th className="px-4 py-2 text-center">পূর্ণমান</th>
+                            <th className="px-4 py-2 text-center">প্রাপ্ত নম্বর</th>
+                            <th className="px-4 py-2 text-center">মন্তব্য</th>
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-100">
@@ -247,16 +318,16 @@ export default function PublicResultSearchPage() {
                             const passStatus = sub.marks_obtained >= passMark;
                             return (
                               <tr key={idx} className="text-slate-700 hover:bg-slate-50/20">
-                                <td className="px-4 py-3 font-bold text-slate-900">
+                                <td className="px-4 py-3 font-bold text-slate-900 text-left">
                                   {sub.subject_name}
                                 </td>
-                                <td className="px-4 py-3 text-slate-400">
+                                <td className="px-4 py-3 text-slate-400 text-center">
                                   {data.total_marks.toLocaleString("bn-BD")}
                                 </td>
-                                <td className="px-4 py-3 font-bold text-slate-800">
+                                <td className="px-4 py-3 font-bold text-slate-800 text-center">
                                   {sub.marks_obtained.toLocaleString("bn-BD")}
                                 </td>
-                                <td className="px-4 py-3">
+                                <td className="px-4 py-3 text-center">
                                   <span
                                     className={`px-2 py-0.5 rounded-md font-bold text-[9px] ${
                                       passStatus
@@ -275,16 +346,24 @@ export default function PublicResultSearchPage() {
                     </div>
 
                     {/* Total stats summary card */}
-                    <div className="flex items-center justify-between p-4 bg-slate-50 rounded-2xl border border-slate-100 my-4 text-xs font-semibold">
-                      <div className="flex items-center gap-1.5">
-                        <span className="text-slate-400">ফলাফল:</span>
-                        <span
-                          className={`font-bold ${isPassed ? "text-emerald-600" : "text-rose-600"}`}
-                        >
-                          {isPassed ? "কৃতকার্য" : "অকৃতকার্য"}
-                        </span>
-                      </div>
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-4 bg-slate-50 rounded-2xl border border-slate-100 my-4 gap-3 text-xs font-semibold">
                       <div className="flex items-center gap-4">
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-slate-400">ফলাফল:</span>
+                          <span
+                            className={`font-bold ${isPassed ? "text-emerald-600" : "text-rose-600"}`}
+                          >
+                            {isPassed ? "কৃতকার্য" : "অকৃতকার্য"}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-slate-400">মেধা স্থান:</span>
+                          <span className="font-bold text-amber-600">
+                            {formatRankBengali(data.student_rank)}
+                          </span>
+                        </div>
+                      </div>
+                      <div className="flex flex-wrap items-center gap-4">
                         <div className="flex items-center gap-1">
                           <span className="text-slate-400">গড় নম্বর:</span>
                           <span className="font-bold text-slate-800">

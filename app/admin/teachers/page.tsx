@@ -361,7 +361,7 @@ export default function TeachersPage() {
             <div
               key={teacher.id}
               onClick={() => openProfileOverlay(teacher)}
-              className="bg-white border border-slate-200/60 rounded-2xl p-5 shadow-xs hover:shadow-md hover:scale-[1.01] transition-all cursor-pointer flex gap-4 group"
+              className="bg-white border border-slate-200/60 rounded-2xl p-5 shadow-xs md:hover:shadow-md md:hover:scale-[1.01] transition-all cursor-pointer flex gap-4 group"
             >
               {/* Photo */}
               <div className="w-20 h-20 rounded-xl overflow-hidden relative bg-slate-100 shrink-0 border border-slate-100">

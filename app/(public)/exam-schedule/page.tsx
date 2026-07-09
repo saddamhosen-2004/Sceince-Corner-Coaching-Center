@@ -1,10 +1,12 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { createClient } from "@/lib/supabase/client";
 import {
-  Loader2, CalendarDays, BookOpen, Clock, MapPin, Layers, StickyNote,
+  Loader2, CalendarDays, BookOpen, Clock, MapPin, Layers, StickyNote, Download
 } from "lucide-react";
+import { toPng } from "html-to-image";
+import Image from "next/image";
 
 interface Batch { id: string; name: string }
 
@@ -23,11 +25,15 @@ interface ExamSlot {
 
 export default function PublicExamSchedulePage() {
   const supabase = createClient();
+  const routineRef = useRef<HTMLDivElement>(null);
+  
   const [slots, setSlots]           = useState<ExamSlot[]>([]);
   const [batches, setBatches]       = useState<Batch[]>([]);
   const [filterBatch, setFilterBatch] = useState("all");
   const [loading, setLoading]       = useState(true);
   const [error, setError]           = useState<string | null>(null);
+  const [downloading, setDownloading] = useState(false);
+  const [logoUrl, setLogoUrl] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -44,6 +50,20 @@ export default function PublicExamSchedulePage() {
         ]);
         if (slotErr) throw slotErr;
         setBatches(batchData || []);
+        
+        try {
+          const { data: logoData } = await supabase
+            .from("site_settings")
+            .select("value")
+            .eq("key", "logo_url")
+            .single();
+          if (logoData?.value) {
+            setLogoUrl(logoData.value);
+          }
+        } catch (err) {
+          console.error("Failed to load logo:", err);
+        }
+
         const mapped = (slotData || []).map((s: any) => ({
           ...s,
           subjects: Array.isArray(s.subjects) ? s.subjects[0] : s.subjects,
@@ -58,6 +78,70 @@ export default function PublicExamSchedulePage() {
     };
     fetchData();
   }, []);
+
+  const downloadRoutineImage = async () => {
+    if (!routineRef.current) return;
+    setDownloading(true);
+    
+    // 1. Create a wrapper positioned off-screen
+    const wrapper = document.createElement("div");
+    wrapper.style.position = "absolute";
+    wrapper.style.top = "-9999px";
+    wrapper.style.left = "-9999px";
+    wrapper.style.width = "1024px";
+    
+    // 2. Clone the element
+    const clone = routineRef.current.cloneNode(true) as HTMLElement;
+    clone.style.position = "relative";
+    clone.style.top = "0px";
+    clone.style.left = "0px";
+    clone.style.width = "100%";
+    
+    // 3. Append clone to wrapper, and wrapper to body
+    wrapper.appendChild(clone);
+    document.body.appendChild(wrapper);
+    
+    // 4. Reveal branding header and footer on the clone
+    const header = clone.querySelector(".branding-header");
+    const footer = clone.querySelector(".branding-footer");
+    if (header) header.classList.remove("hidden");
+    if (footer) footer.classList.remove("hidden");
+    
+    // Remove animations to prevent elements starting at opacity-0 in html-to-image
+    [clone, ...clone.querySelectorAll("*")].forEach((el) => {
+      const classes = Array.from(el.classList);
+      classes.forEach((c) => {
+        if (c.startsWith("animate-") || c.startsWith("stagger-")) {
+          el.classList.remove(c);
+        }
+      });
+    });
+    
+    try {
+      // 5. Generate PNG from the clone (not the wrapper)
+      const dataUrl = await toPng(clone, {
+        cacheBust: true,
+        backgroundColor: "#f8fafc",
+        style: {
+          padding: "24px",
+          borderRadius: "0px",
+        }
+      });
+      
+      const link = document.createElement("a");
+      const batchName = filterBatch === "all" ? "All-Batches" : (batches.find(b => b.id === filterBatch)?.name || "Routine");
+      link.download = `Exam-Routine-${batchName}.png`;
+      link.href = dataUrl;
+      link.click();
+    } catch (err) {
+      console.error("Error generating exam routine image:", err);
+      alert("রুটিন ইমেজ তৈরিতে সমস্যা হয়েছে। অনুগ্রহ করে আবার চেষ্টা করুন।");
+    } finally {
+      // 6. Clean up the wrapper from the DOM
+      document.body.removeChild(wrapper);
+      setDownloading(false);
+    }
+  };
 
   const today = new Date();
   today.setHours(0, 0, 0, 0);
@@ -98,42 +182,64 @@ export default function PublicExamSchedulePage() {
 
   return (
     <div className="max-w-5xl mx-auto px-5 py-8 md:py-12">
-      <div className="space-y-8 text-left">
+      <div className="space-y-8 text-left font-sans">
 
         {/* Header */}
         <div className="space-y-1 animate-fade-in-up">
-          <h1 className="text-2xl font-black text-slate-800 font-sans">পরীক্ষার সময়সূচী</h1>
-          <p className="text-slate-400 text-xs">
+          <h1 className="text-2xl font-black text-slate-800">পরীক্ষার সময়সূচী</h1>
+          <p className="text-slate-400 text-xs mt-1">
             কোন পরীক্ষা কখন, কোথায় — বিস্তারিত সময়সূচী দেখুন
           </p>
         </div>
 
-        {/* Batch filter tabs */}
+        {/* Batch filter tabs & download button */}
         {!loading && batches.length > 0 && (
-          <div className="flex flex-wrap gap-2 animate-fade-in-up stagger-1">
-            <button
-              onClick={() => setFilterBatch("all")}
-              className="px-4 py-2 rounded-xl text-xs font-bold transition-all duration-200 cursor-pointer"
-              style={filterBatch === "all"
-                ? { background: "#3B6FA8", color: "#fff", boxShadow: "0 4px 16px rgba(59,111,168,0.3)" }
-                : { background: "#fff", color: "#3B6FA8", border: "1.5px solid #3B6FA8" }}
-            >
-              <Layers className="w-3.5 h-3.5 inline-block mr-1.5 -mt-0.5" />
-              সকল ব্যাচ
-            </button>
-            {batches.map(b => (
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-slate-200 pb-4 animate-fade-in-up stagger-1">
+            <div className="flex flex-wrap gap-2">
               <button
-                key={b.id}
-                onClick={() => setFilterBatch(b.id)}
-                className="px-4 py-2 rounded-xl text-xs font-bold transition-all duration-200 cursor-pointer"
-                style={filterBatch === b.id
+                onClick={() => setFilterBatch("all")}
+                className="px-4 py-2 rounded-xl text-xs font-bold transition-all duration-200 cursor-pointer shadow-xs"
+                style={filterBatch === "all"
                   ? { background: "#3B6FA8", color: "#fff", boxShadow: "0 4px 16px rgba(59,111,168,0.3)" }
                   : { background: "#fff", color: "#3B6FA8", border: "1.5px solid #3B6FA8" }}
               >
                 <Layers className="w-3.5 h-3.5 inline-block mr-1.5 -mt-0.5" />
-                {b.name}
+                সকল ব্যাচ
               </button>
-            ))}
+              {batches.map(b => (
+                <button
+                  key={b.id}
+                  onClick={() => setFilterBatch(b.id)}
+                  className="px-4 py-2 rounded-xl text-xs font-bold transition-all duration-200 cursor-pointer shadow-xs"
+                  style={filterBatch === b.id
+                    ? { background: "#3B6FA8", color: "#fff", boxShadow: "0 4px 16px rgba(59,111,168,0.3)" }
+                    : { background: "#fff", color: "#3B6FA8", border: "1.5px solid #3B6FA8" }}
+                >
+                  <Layers className="w-3.5 h-3.5 inline-block mr-1.5 -mt-0.5" />
+                  {b.name}
+                </button>
+              ))}
+            </div>
+
+            {(upcoming.length > 0 || past.length > 0) && (
+              <button
+                onClick={downloadRoutineImage}
+                disabled={downloading}
+                className="inline-flex items-center justify-center gap-1.5 px-4.5 py-2 bg-[#3B6FA8] hover:bg-blue-700 text-white rounded-xl text-xs font-bold shadow-xs transition-all hover:scale-[1.02] disabled:opacity-50 cursor-pointer self-start sm:self-auto"
+              >
+                {downloading ? (
+                  <>
+                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    ছবি তৈরি হচ্ছে...
+                  </>
+                ) : (
+                  <>
+                    <Download className="w-3.5 h-3.5" />
+                    রুটিন ডাউনলোড
+                  </>
+                )}
+              </button>
+            )}
           </div>
         )}
 
@@ -147,7 +253,41 @@ export default function PublicExamSchedulePage() {
             {error}
           </div>
         ) : (
-          <>
+          <div ref={routineRef} className="bg-slate-50/50 p-6 rounded-3xl border border-slate-200/50 space-y-6">
+            
+            {/* Download Branding Header */}
+            <div className="branding-header hidden flex items-center justify-between border-b border-slate-200/60 pb-5">
+              <div className="flex items-center gap-3">
+                {logoUrl ? (
+                  <div className="relative w-12 h-12 rounded-2xl overflow-hidden bg-white border border-slate-200/60 p-1 flex items-center justify-center shrink-0">
+                    <Image
+                      src={logoUrl}
+                      alt="Logo"
+                      width={40}
+                      height={40}
+                      className="object-contain"
+                      unoptimized
+                    />
+                  </div>
+                ) : (
+                  <div className="flex items-center justify-center w-12 h-12 rounded-2xl bg-[#3B6FA8] text-white font-bold text-xl shrink-0">
+                    ম
+                  </div>
+                )}
+                <div>
+                  <h2 className="font-black text-slate-800 text-base leading-snug">মানবিক কলেজ কোচিং সেন্টার</h2>
+                  <p className="text-slate-500 text-xs mt-0.5">এইচএসসি মানবিক বিভাগের বিশেষায়িত কোচিং</p>
+                </div>
+              </div>
+              
+              <div className="text-right">
+                <span className="inline-block px-3 py-1 bg-blue-50 border border-blue-200 text-blue-700 text-xs font-bold rounded-full">
+                  ব্যাচ: {filterBatch === "all" ? "সকল ব্যাচ" : batches.find(b => b.id === filterBatch)?.name || ""}
+                </span>
+                <p className="text-[10px] text-slate-400 mt-1">পরীক্ষার সময়সূচী</p>
+              </div>
+            </div>
+
             {/* ── Upcoming ── */}
             <div className="space-y-6 animate-fade-in-up stagger-2">
               <h2 className="text-sm font-bold text-slate-700 flex items-center gap-2">
@@ -288,7 +428,14 @@ export default function PublicExamSchedulePage() {
                 </div>
               </div>
             )}
-          </>
+
+            {/* Download Branding Footer */}
+            <div className="branding-footer hidden flex items-center justify-between border-t border-slate-200/60 pt-4 text-[10px] text-slate-400 font-medium">
+              <span>© ২০২৬ মানবিক কলেজ কোচিং সেন্টার। সর্বস্বত্ব সংরক্ষিত।</span>
+              <span>Developed with ❤️ by Saddam Bin Mazid</span>
+            </div>
+
+          </div>
         )}
       </div>
     </div>

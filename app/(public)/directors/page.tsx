@@ -60,14 +60,14 @@ export default function PublicDirectorsPage() {
           {error}
         </div>
       ) : directors.length > 0 ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
           {directors.map((director) => (
             <div
               key={director.id}
-              className="bg-white border border-slate-200/50 rounded-2xl p-6 shadow-xs flex flex-col items-center text-center transition-all hover:shadow-md hover:scale-[1.01]"
+              className="bg-white border border-slate-200/50 rounded-2xl p-5 shadow-xs flex flex-col items-center text-center transition-all md:hover:shadow-md md:hover:scale-[1.01]"
             >
               {/* Photo */}
-              <div className="w-24 h-24 rounded-full overflow-hidden relative bg-slate-50 border border-slate-100 mb-4 shadow-sm animate-fade-in">
+              <div className="w-20 h-20 rounded-full overflow-hidden relative bg-slate-50 border border-slate-100 mb-3 shadow-sm animate-fade-in">
                 <Image
                   src={director.photo_url || "/images/demo/avatar_director.png"}
                   alt={director.name}
@@ -77,10 +77,10 @@ export default function PublicDirectorsPage() {
               </div>
 
               {/* Title & Position */}
-              <h3 className="font-bold text-slate-900 text-sm mb-1">{director.name}</h3>
+              <h3 className="font-bold text-slate-900 text-sm mb-0.5">{director.name}</h3>
               
-              <div className="mt-3 pt-3 border-t border-slate-50 w-full flex items-center justify-center gap-1 text-slate-600 text-xs font-semibold">
-                <Award className="w-4 h-4 text-teal-600 shrink-0" />
+              <div className="mt-2.5 pt-2.5 border-t border-slate-100 w-full flex items-center justify-center gap-1 text-slate-600 text-xs font-semibold">
+                <Award className="w-3.5 h-3.5 text-teal-600 shrink-0" />
                 <span>{director.position}</span>
               </div>
             </div>

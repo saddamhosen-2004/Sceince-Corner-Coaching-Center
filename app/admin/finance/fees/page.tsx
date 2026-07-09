@@ -66,6 +66,25 @@ export default function FeesPage() {
 
   // Receipt Printing State
   const [receiptToPrint, setReceiptToPrint] = useState<FeeCollection | null>(null);
+  const [logoUrl, setLogoUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchLogo = async () => {
+      try {
+        const { data: logoData } = await supabase
+          .from("site_settings")
+          .select("value")
+          .eq("key", "logo_url")
+          .single();
+        if (logoData?.value) {
+          setLogoUrl(logoData.value);
+        }
+      } catch (err) {
+        console.error("Failed to load logo in fees page:", err);
+      }
+    };
+    fetchLogo();
+  }, []);
 
   const banglaMonths = [
     "জানুয়ারি",
@@ -282,7 +301,20 @@ export default function FeesPage() {
       {/* Printable Receipt Layout - HIDDEN ON DISPLAY, SHOWN ONLY ON PRINT */}
       {receiptToPrint && (
         <div className="hidden print:block print-area p-8 border-2 border-slate-900 rounded-2xl max-w-lg mx-auto text-left font-sans">
-          <div className="text-center pb-4 border-b-2 border-slate-800">
+          <div className="text-center pb-4 border-b-2 border-slate-800 flex flex-col items-center">
+            {logoUrl ? (
+              <div className="relative w-12 h-12 rounded-xl overflow-hidden bg-white border border-slate-200/60 p-1 flex items-center justify-center shrink-0 mb-2">
+                <img
+                  src={logoUrl}
+                  alt="Logo"
+                  className="w-full h-full object-contain"
+                />
+              </div>
+            ) : (
+              <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-teal-600 text-white font-bold text-lg shrink-0 mb-2">
+                ম
+              </div>
+            )}
             <h2 className="text-xl font-bold">মানবিক কলেজ কোচিং সেন্টার</h2>
             <p className="text-[10px] text-slate-500 mt-0.5">এইচএসসি মানবিক বিভাগের নির্ভরযোগ্য শিক্ষা প্রতিষ্ঠান</p>
             <p className="text-[10px] text-slate-400">মোবাইল: ০১XXXXXXX • ঢাকা, বাংলাদেশ</p>
@@ -295,26 +327,26 @@ export default function FeesPage() {
 
           <div className="border-t border-b border-slate-200 py-3 my-2 space-y-2 text-xs">
             <div className="flex justify-between">
-              <span className="font-bold">{receiptToPrint.students?.name}</span>
               <span className="text-slate-500">ছাত্র/ছাত্রীর নাম:</span>
+              <span className="font-bold text-slate-800">{receiptToPrint.students?.name}</span>
             </div>
             <div className="flex justify-between">
-              <span className="font-mono">{receiptToPrint.students?.student_id}</span>
               <span className="text-slate-500">রোল/আইডি:</span>
+              <span className="font-mono font-bold text-slate-800">{receiptToPrint.students?.student_id}</span>
             </div>
             <div className="flex justify-between">
-              <span>{receiptToPrint.students?.batches?.name || "নির্ধারিত নেই"}</span>
               <span className="text-slate-500">ব্যাচ:</span>
+              <span className="font-semibold text-slate-800">{receiptToPrint.students?.batches?.name || "নির্ধারিত নেই"}</span>
             </div>
             <div className="flex justify-between">
-              <span className="font-bold">{receiptToPrint.month} {receiptToPrint.year}</span>
               <span className="text-slate-500">পরিশোধিত মাস:</span>
+              <span className="font-bold text-slate-800">{receiptToPrint.month} {receiptToPrint.year}</span>
             </div>
           </div>
 
           <div className="flex items-center justify-between py-4 bg-slate-50 border-2 border-dashed border-slate-300 px-4 rounded-xl my-6">
-            <span className="text-lg font-bold">৳ {Number(receiptToPrint.amount).toLocaleString("bn-BD")}</span>
             <span className="font-bold text-xs">মোট পরিশোধিত টাকা:</span>
+            <span className="text-lg font-bold text-slate-900">৳ {Number(receiptToPrint.amount).toLocaleString("bn-BD")}</span>
           </div>
 
           <div className="flex justify-between items-end pt-12 text-xs">

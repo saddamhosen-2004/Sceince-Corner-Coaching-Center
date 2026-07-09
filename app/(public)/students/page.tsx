@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { Loader2, User, Search, Filter, Layers } from "lucide-react";
+import { Loader2, User, Search, Filter, Layers, Lock } from "lucide-react";
 import Image from "next/image";
 
 interface PublicStudent {
@@ -28,6 +28,7 @@ export default function PublicStudentsPage() {
   const [batches, setBatches] = useState<Batch[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [hidePublicStudents, setHidePublicStudents] = useState<boolean>(false);
 
   // Search & Filters
   const [searchTerm, setSearchTerm] = useState("");
@@ -37,7 +38,20 @@ export default function PublicStudentsPage() {
     setLoading(true);
     setError(null);
     try {
-      // 1. Fetch public students view (only public columns)
+      // 1. Fetch privacy settings
+      const { data: settingsData } = await supabase
+        .from("site_settings")
+        .select("key, value");
+      
+      const hideStudents = settingsData?.find(s => s.key === "hide_public_students")?.value === "true";
+      setHidePublicStudents(hideStudents);
+
+      if (hideStudents) {
+        setLoading(false);
+        return;
+      }
+
+      // 2. Fetch public students view (only public columns)
       const { data: stdData, error: stdErr } = await supabase
         .from("view_public_students")
         .select("*")
@@ -45,7 +59,7 @@ export default function PublicStudentsPage() {
 
       if (stdErr) throw stdErr;
 
-      // 2. Fetch batches
+      // 3. Fetch batches
       const { data: batchData, error: batchErr } = await supabase
         .from("batches")
         .select("id, name")
@@ -75,6 +89,22 @@ export default function PublicStudentsPage() {
     const matchesBatch = filterBatch === "" || student.batch_id === filterBatch;
     return matchesSearch && matchesBatch;
   });
+
+  if (!loading && hidePublicStudents) {
+    return (
+      <div className="max-w-5xl mx-auto px-5 py-8 md:py-12">
+        <div className="py-20 text-center bg-white border border-slate-200/60 rounded-3xl max-w-xl mx-auto shadow-xs space-y-4 p-6 font-sans">
+          <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-slate-50 border border-slate-100 text-slate-400">
+            <Lock className="w-6 h-6 text-teal-600" />
+          </div>
+          <h2 className="text-lg font-black text-slate-800">তথ্যটি গোপন রাখা হয়েছে</h2>
+          <p className="text-slate-500 text-xs max-w-xs mx-auto leading-relaxed">
+            কোচিং পলিসি ও শিক্ষার্থীদের ব্যক্তিগত সুরক্ষার স্বার্থে শিক্ষার্থী তালিকাটি পাবলিক ওয়েবসাইট থেকে গোপন রাখা হয়েছে।
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-5xl mx-auto px-5 py-8 md:py-12">
@@ -134,7 +164,7 @@ export default function PublicStudentsPage() {
           {filteredStudents.map((student) => (
             <div
               key={student.id}
-              className="bg-white border border-slate-200/50 rounded-2xl p-5 shadow-xs flex flex-col items-center text-center transition-all hover:shadow-md hover:scale-[1.01]"
+              className="bg-white border border-slate-200/50 rounded-2xl p-5 shadow-xs flex flex-col items-center text-center transition-all md:hover:shadow-md md:hover:scale-[1.01]"
             >
               {/* Photo */}
               <div className="w-20 h-20 rounded-full overflow-hidden relative bg-slate-50 border border-slate-100 mb-4">

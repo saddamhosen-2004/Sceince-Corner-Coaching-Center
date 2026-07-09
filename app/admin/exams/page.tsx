@@ -378,9 +378,25 @@ export default function ExamsPage() {
                         setSelectedSubjectId("");
                       }}
                       className={`p-4 flex items-center justify-between cursor-pointer transition-all hover:bg-slate-50 text-left ${
-                        isSelected ? "bg-slate-50 border-r-4 border-teal-600" : ""
+                        isSelected ? "bg-slate-50 border-l-4 border-teal-600" : ""
                       }`}
                     >
+                      <div>
+                        <h4 className="font-bold text-slate-900 text-xs leading-snug">
+                          {exam.name}
+                        </h4>
+                        <div className="flex items-center justify-start gap-3 mt-1.5 text-[10px] text-slate-400">
+                          <span className="flex items-center gap-1">
+                            <Layers className="w-3 h-3" />
+                            {exam.batches?.name}
+                          </span>
+                          <span className="flex items-center gap-1">
+                            <Calendar className="w-3 h-3" />
+                            {new Date(exam.exam_date).toLocaleDateString("bn-BD")}
+                          </span>
+                        </div>
+                      </div>
+
                       <div className="flex items-center gap-1.5">
                         <button
                           onClick={(e) => openEditModal(e, exam)}
@@ -395,22 +411,6 @@ export default function ExamsPage() {
                           <Trash2 className="w-3.5 h-3.5" />
                         </button>
                         <ChevronRight className="w-4 h-4 text-slate-400 ml-1" />
-                      </div>
-
-                      <div>
-                        <h4 className="font-bold text-slate-900 text-xs leading-snug">
-                          {exam.name}
-                        </h4>
-                        <div className="flex items-center justify-end gap-3 mt-1.5 text-[10px] text-slate-400">
-                          <span className="flex items-center gap-1">
-                            <Layers className="w-3 h-3" />
-                            {exam.batches?.name}
-                          </span>
-                          <span className="flex items-center gap-1">
-                            <Calendar className="w-3 h-3" />
-                            {new Date(exam.exam_date).toLocaleDateString("bn-BD")}
-                          </span>
-                        </div>
                       </div>
                     </div>
                   );
@@ -474,14 +474,20 @@ export default function ExamsPage() {
                       <table className="w-full text-left border-collapse text-xs">
                         <thead>
                           <tr className="border-b border-slate-100 text-slate-400 font-semibold">
-                            <th className="pb-3 text-left">প্রাপ্ত নম্বর (পূর্ণমান {selectedExam.total_marks})</th>
-                            <th className="pb-3 text-left">রোল আইডি</th>
                             <th className="pb-3 text-left">শিক্ষার্থীর নাম</th>
+                            <th className="pb-3 text-left">রোল আইডি</th>
+                            <th className="pb-3 text-left">প্রাপ্ত নম্বর (পূর্ণমান {selectedExam.total_marks})</th>
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-50">
                           {studentsWithMarks.map((student) => (
                             <tr key={student.id} className="text-slate-700 hover:bg-slate-50/50">
+                              <td className="py-2.5 font-bold text-slate-900">
+                                {student.name}
+                              </td>
+                              <td className="py-2.5 font-semibold text-slate-500">
+                                {student.student_id}
+                              </td>
                               <td className="py-2.5">
                                 <input
                                   type="number"
@@ -494,12 +500,6 @@ export default function ExamsPage() {
                                   placeholder="নম্বর লিখুন"
                                   className="w-28 px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-center text-slate-800 placeholder-slate-300 focus:outline-hidden focus:ring-1 focus:ring-teal-600 focus:bg-white transition-all text-xs"
                                 />
-                              </td>
-                              <td className="py-2.5 font-semibold text-slate-500">
-                                {student.student_id}
-                              </td>
-                              <td className="py-2.5 font-bold text-slate-900">
-                                {student.name}
                               </td>
                             </tr>
                           ))}

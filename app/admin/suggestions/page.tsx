@@ -293,16 +293,34 @@ export default function SuggestionsPage() {
             <table className="w-full text-left border-collapse text-sm">
               <thead>
                 <tr className="bg-slate-50 border-b border-slate-200/60 text-slate-500 font-semibold">
-                  <th className="px-6 py-4">পদক্ষেপ</th>
-                  <th className="px-6 py-4">ফাইল লিংক</th>
-                  <th className="px-6 py-4">পরীক্ষার নাম</th>
-                  <th className="px-6 py-4">ব্যাচ</th>
                   <th className="px-6 py-4">বিষয়</th>
+                  <th className="px-6 py-4">ব্যাচ</th>
+                  <th className="px-6 py-4">পরীক্ষার নাম</th>
+                  <th className="px-6 py-4">ফাইল লিংক</th>
+                  <th className="px-6 py-4">পদক্ষেপ</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
                 {suggestions.map((sug) => (
                   <tr key={sug.id} className="text-slate-700 hover:bg-slate-50/50">
+                    <td className="px-6 py-4 font-bold text-slate-900">{sug.subjects?.name}</td>
+                    <td className="px-6 py-4 font-bold text-teal-700">{sug.batches?.name || "সকল ব্যাচ"}</td>
+                    <td className="px-6 py-4 font-semibold text-slate-700">{sug.exam_name}</td>
+                    <td className="px-6 py-4">
+                      {sug.file_url ? (
+                        <a
+                          href={sug.file_url}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-indigo-50 border border-indigo-100 text-indigo-700 rounded-lg text-xs font-semibold hover:bg-indigo-100 transition-colors"
+                        >
+                          <FileDown className="w-3.5 h-3.5" />
+                          <span>ডাউনলোড PDF</span>
+                        </a>
+                      ) : (
+                        <span className="text-slate-400 text-xs italic">ফাইল সংযুক্ত নেই</span>
+                      )}
+                    </td>
                     <td className="px-6 py-4">
                       <div className="flex items-center justify-start gap-2">
                         <button
@@ -321,24 +339,6 @@ export default function SuggestionsPage() {
                         </button>
                       </div>
                     </td>
-                    <td className="px-6 py-4">
-                      {sug.file_url ? (
-                        <a
-                          href={sug.file_url}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-indigo-50 border border-indigo-100 text-indigo-700 rounded-lg text-xs font-semibold hover:bg-indigo-100 transition-colors"
-                        >
-                          <FileDown className="w-3.5 h-3.5" />
-                          <span>ডাউনলোড PDF</span>
-                        </a>
-                      ) : (
-                        <span className="text-slate-400 text-xs italic">ফাইল সংযুক্ত নেই</span>
-                      )}
-                    </td>
-                    <td className="px-6 py-4 font-semibold text-slate-700">{sug.exam_name}</td>
-                    <td className="px-6 py-4 font-bold text-teal-700">{sug.batches?.name || "সকল ব্যাচ"}</td>
-                    <td className="px-6 py-4 font-bold text-slate-900">{sug.subjects?.name}</td>
                   </tr>
                 ))}
               </tbody>

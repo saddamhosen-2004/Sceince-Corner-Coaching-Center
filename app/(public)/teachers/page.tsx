@@ -66,7 +66,7 @@ export default function PublicTeachersPage() {
           {teachers.map((teacher) => (
             <div
               key={teacher.id}
-              className="bg-white border border-slate-200/50 rounded-2xl p-5 shadow-xs flex flex-col items-center text-center transition-all hover:shadow-md hover:scale-[1.01]"
+              className="bg-white border border-slate-200/50 rounded-2xl p-5 shadow-xs flex flex-col items-center text-center transition-all md:hover:shadow-md md:hover:scale-[1.01]"
             >
               {/* Photo */}
               <div className="w-20 h-20 rounded-full overflow-hidden relative bg-slate-50 border border-slate-100 mb-4">
