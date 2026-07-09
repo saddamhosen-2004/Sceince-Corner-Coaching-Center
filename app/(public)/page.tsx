@@ -50,6 +50,7 @@ export default function PublicHomePage() {
   const [batches, setBatches] = useState<Batch[]>([]);
   const [loading, setLoading] = useState(true);
   const [heroBannerUrl, setHeroBannerUrl] = useState("/images/hero_banner.png");
+  const [isBannerLoaded, setIsBannerLoaded] = useState(false);
 
   useEffect(() => {
     const supabaseClient = createClient();
@@ -67,7 +68,22 @@ export default function PublicHomePage() {
         setStudentCount(stdRes.count ?? 0);
         setTeacherCount(teachRes.count ?? 0);
         setBatches(batchRes.data || []);
-        if (settingsRes.data?.value) setHeroBannerUrl(settingsRes.data.value);
+        
+        if (settingsRes.data?.value) {
+          const newUrl = settingsRes.data.value;
+          // Preload the custom banner image in the background
+          const img = new window.Image();
+          img.src = newUrl;
+          img.onload = () => {
+            setIsBannerLoaded(false); // start fade-out transition
+            setTimeout(() => {
+              setHeroBannerUrl(newUrl); // swap image once fully transparent
+            }, 300);
+          };
+          img.onerror = () => {
+            setHeroBannerUrl(newUrl); // fallback directly on error
+          };
+        }
       } catch (err) {
         console.error("Error fetching stats:", err);
       } finally {
@@ -128,14 +144,16 @@ export default function PublicHomePage() {
         }}
       >
         {/* ── Full-bleed background image ── */}
-        <div
-          className="absolute inset-0"
-          style={{
-            backgroundImage: `url('${heroBannerUrl}')`,
-            backgroundSize: "cover",
-            backgroundPosition: "center top",
-          }}
-        />
+        <div className="absolute inset-0 bg-[#0E1E3A]">
+          <img
+            src={heroBannerUrl}
+            alt="Hero Banner"
+            onLoad={() => setIsBannerLoaded(true)}
+            className={`w-full h-full object-cover transition-all duration-700 ease-in-out ${
+              isBannerLoaded ? "opacity-100 scale-100 blur-0" : "opacity-0 scale-105 blur-xs"
+            }`}
+          />
+        </div>
 
         {/* ── Sky-blue colour wash so the image has the right palette ── */}
         <div
