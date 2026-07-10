@@ -16,12 +16,19 @@ import {
   X,
 } from "lucide-react";
 
+interface Batch {
+  id: string;
+  name: string;
+}
+
 interface Student {
   id: string;
   name: string;
   student_id: string; // Roll ID
   monthly_fee: number;
+  batch_id?: string | null;
   batches?: {
+    id?: string;
     name: string;
   } | null;
 }
@@ -48,6 +55,9 @@ export default function FeesPage() {
 
   const [collections, setCollections] = useState<FeeCollection[]>([]);
   const [students, setStudents] = useState<Student[]>([]);
+  const [batches, setBatches] = useState<Batch[]>([]);
+  const [selectedBatchId, setSelectedBatchId] = useState("all");
+  const [modalSelectedBatchId, setModalSelectedBatchId] = useState("all");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
@@ -128,10 +138,18 @@ export default function FeesPage() {
       // 2. Fetch all students for the dropdown select
       const { data: stdData, error: stdErr } = await supabase
         .from("students")
-        .select("id, name, student_id, monthly_fee, batches(name)")
+        .select("id, name, student_id, monthly_fee, batch_id, batches(id, name)")
         .order("name", { ascending: true });
 
       if (stdErr) throw stdErr;
+
+      // 3. Fetch all batches for filtering
+      const { data: batchData, error: batchErr } = await supabase
+        .from("batches")
+        .select("id, name")
+        .order("name", { ascending: true });
+
+      if (batchErr) throw batchErr;
 
       const mappedCollections = (colData || []).map((col: any) => {
         const studentRaw = Array.isArray(col.students) ? col.students[0] : col.students;
@@ -155,16 +173,24 @@ export default function FeesPage() {
         };
       });
 
-      const mappedStudents = (stdData || []).map((std: any) => ({
-        id: std.id,
-        name: std.name,
-        student_id: std.student_id,
-        monthly_fee: std.monthly_fee,
-        batches: Array.isArray(std.batches) ? std.batches[0] : std.batches,
-      }));
+      const mappedStudents = (stdData || []).map((std: any) => {
+        const studentBatchesRaw = Array.isArray(std.batches) ? std.batches[0] : std.batches;
+        return {
+          id: std.id,
+          name: std.name,
+          student_id: std.student_id,
+          monthly_fee: std.monthly_fee,
+          batch_id: std.batch_id,
+          batches: studentBatchesRaw ? {
+            id: studentBatchesRaw.id,
+            name: studentBatchesRaw.name
+          } : null,
+        };
+      });
 
       setCollections(mappedCollections);
       setStudents(mappedStudents);
+      setBatches(batchData || []);
     } catch (err: any) {
       setError(err.message || "ফি কালেকশন হিস্ট্রি লোড করতে সমস্যা হয়েছে।");
     } finally {
@@ -286,14 +312,25 @@ export default function FeesPage() {
     }, 150);
   };
 
-  // Search Filter
+  // Search and Batch Filter
   const filteredCollections = collections.filter((col) => {
     const term = searchTerm.toLowerCase();
-    return (
+    const matchesSearch = (
       col.students?.name.toLowerCase().includes(term) ||
       col.students?.student_id.toLowerCase().includes(term) ||
       col.receipt_number.toLowerCase().includes(term)
     );
+    
+    const matchesBatch = selectedBatchId === "all" ||
+      col.students?.batches?.name === batches.find(b => b.id === selectedBatchId)?.name;
+      
+    return matchesSearch && matchesBatch;
+  });
+
+  // Filter students inside the Collect Fee modal based on modalSelectedBatchId
+  const filteredModalStudents = students.filter((student) => {
+    if (modalSelectedBatchId === "all") return true;
+    return student.batch_id === modalSelectedBatchId || student.batches?.id === modalSelectedBatchId;
   });
 
   return (
@@ -370,6 +407,7 @@ export default function FeesPage() {
           <button
             onClick={() => {
               setSelectedStudentId("");
+              setModalSelectedBatchId("all");
               setError(null);
               setModalOpen(true);
             }}
@@ -395,9 +433,9 @@ export default function FeesPage() {
           </div>
         )}
 
-        {/* Search header */}
-        <div className="flex items-center p-4 bg-white border border-slate-200/60 rounded-2xl shadow-xs">
-          <div className="relative flex-1">
+        {/* Search & Batch Filter header */}
+        <div className="flex flex-col sm:flex-row items-center gap-4 p-4 bg-white border border-slate-200/60 rounded-2xl shadow-xs">
+          <div className="relative flex-1 w-full">
             <span className="absolute inset-y-0 right-0 flex items-center pr-3 text-slate-400">
               <Search className="w-4 h-4" />
             </span>
@@ -408,6 +446,20 @@ export default function FeesPage() {
               placeholder="শিক্ষার্থীর নাম, রোল আইডি বা রসিদ নম্বর লিখে সার্চ করুন..."
               className="w-full pl-4 pr-10 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-800 placeholder-slate-400 focus:outline-hidden focus:ring-2 focus:ring-teal-600/20 focus:border-teal-600 transition-all text-xs text-left"
             />
+          </div>
+          <div className="w-full sm:w-48 shrink-0">
+            <select
+              value={selectedBatchId}
+              onChange={(e) => setSelectedBatchId(e.target.value)}
+              className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-800 focus:outline-hidden focus:ring-2 focus:ring-teal-600/20 focus:border-teal-600 transition-all text-xs font-semibold text-left"
+            >
+              <option value="all">সব ব্যাচ</option>
+              {batches.map((b) => (
+                <option key={b.id} value={b.id}>
+                  {b.name}
+                </option>
+              ))}
+            </select>
           </div>
         </div>
 
@@ -501,6 +553,27 @@ export default function FeesPage() {
               <form onSubmit={handleCollectFee} className="p-6 space-y-4">
                 <div>
                   <label className="block text-slate-700 text-xs font-semibold mb-1.5">
+                    ব্যাচ অনুযায়ী ফিল্টার করুন
+                  </label>
+                  <select
+                    value={modalSelectedBatchId}
+                    onChange={(e) => {
+                      setModalSelectedBatchId(e.target.value);
+                      setSelectedStudentId(""); // reset student select when batch changes
+                    }}
+                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-slate-800 focus:outline-hidden focus:ring-2 focus:ring-teal-600/20 focus:border-teal-600 transition-all text-xs"
+                  >
+                    <option value="all">সব ব্যাচ</option>
+                    {batches.map((b) => (
+                      <option key={b.id} value={b.id}>
+                        {b.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-slate-700 text-xs font-semibold mb-1.5">
                     শিক্ষার্থী নির্বাচন করুন
                   </label>
                   <select
@@ -510,7 +583,7 @@ export default function FeesPage() {
                     className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-slate-800 focus:outline-hidden focus:ring-2 focus:ring-teal-600/20 focus:border-teal-600 transition-all text-xs"
                   >
                     <option value="">-- শিক্ষার্থী নির্বাচন করুন --</option>
-                    {students.map((student) => (
+                    {filteredModalStudents.map((student) => (
                       <option key={student.id} value={student.id}>
                         {student.name} ({student.student_id} -{" "}
                         {student.batches?.name || "ব্যাচ নেই"})
