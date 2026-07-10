@@ -570,7 +570,7 @@ export default function AdminSettingsPage() {
 
           {/* RIGHT COLUMN: Hero Banner Card */}
           <div className="space-y-6">
-            <div className="bg-white border border-slate-200 rounded-2xl p-6 space-y-4 shadow-xs h-full flex flex-col justify-between">
+            <div className="bg-white border border-slate-200 rounded-2xl p-6 space-y-4 shadow-xs">
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <h2 className="font-bold text-slate-800 text-sm flex items-center gap-2">
@@ -591,7 +591,7 @@ export default function AdminSettingsPage() {
 
                 {/* Banner Preview */}
                 {previewBannerUrl ? (
-                  <div className="relative w-full h-40 rounded-xl overflow-hidden border border-slate-100">
+                  <div className="relative w-full h-32 rounded-xl overflow-hidden border border-slate-100">
                     <Image
                       src={previewBannerUrl}
                       alt="হিরো ব্যানার প্রিভিউ"
@@ -599,15 +599,15 @@ export default function AdminSettingsPage() {
                       className="object-cover"
                       unoptimized
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-slate-900/60 to-transparent flex items-end p-3">
+                    <div className="absolute inset-0 bg-gradient-to-t from-slate-900/60 to-transparent flex items-end p-2.5">
                       <span className="text-white text-[10px] font-semibold">
                         {previewBannerUrl !== currentBannerUrl ? "⚡ নতুন ব্যানার (সংরক্ষণ করা হয়নি)" : "✅ বর্তমান ব্যানার"}
                       </span>
                     </div>
                   </div>
                 ) : (
-                  <div className="flex flex-col items-center justify-center h-40 bg-slate-50 rounded-xl text-slate-400 gap-2 border border-dashed border-slate-200">
-                    <ImageIcon className="w-8 h-8" />
+                  <div className="flex flex-col items-center justify-center h-32 bg-slate-50 rounded-xl text-slate-400 gap-1.5 border border-dashed border-slate-200">
+                    <ImageIcon className="w-7 h-7" />
                     <p className="text-xs">কোনো ব্যানার সেট করা নেই</p>
                   </div>
                 )}
@@ -618,7 +618,7 @@ export default function AdminSettingsPage() {
                   onDragLeave={() => setDragOverBanner(false)}
                   onDrop={handleBannerDrop}
                   onClick={() => bannerInputRef.current?.click()}
-                  className={`relative flex flex-col items-center justify-center gap-2 p-6 rounded-xl border-2 border-dashed cursor-pointer transition-all duration-200 ${
+                  className={`relative flex flex-col items-center justify-center gap-1.5 p-4 rounded-xl border-2 border-dashed cursor-pointer transition-all duration-200 ${
                     dragOverBanner
                       ? "border-teal-500 bg-teal-50 scale-[1.01]"
                       : "border-slate-200 bg-slate-50/50 hover:border-teal-400 hover:bg-teal-50/40"
