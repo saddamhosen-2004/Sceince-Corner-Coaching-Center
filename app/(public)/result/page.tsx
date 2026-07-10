@@ -86,13 +86,43 @@ export default function PublicResultSearchPage() {
     if (!element) return;
 
     setDownloading(examId);
+
+    // 1. Create a wrapper positioned invisibly within viewport bounds to ensure mobile browser paints it
+    const wrapper = document.createElement("div");
+    wrapper.style.position = "fixed";
+    wrapper.style.top = "0px";
+    wrapper.style.left = "0px";
+    wrapper.style.width = "720px";
+    wrapper.style.opacity = "0.01";
+    wrapper.style.pointerEvents = "none";
+    wrapper.style.zIndex = "-9999";
+
+    // 2. Clone the element
+    const clone = element.cloneNode(true) as HTMLElement;
+    clone.style.position = "relative";
+    clone.style.top = "0px";
+    clone.style.left = "0px";
+    clone.style.width = "100%";
+
+    // 3. Append clone to wrapper, and wrapper to body
+    wrapper.appendChild(clone);
+    document.body.appendChild(wrapper);
+
+    // Remove animations to prevent elements starting at opacity-0 in html-to-image
+    [clone, ...clone.querySelectorAll("*")].forEach((el) => {
+      const classes = Array.from(el.classList);
+      classes.forEach((c) => {
+        if (c.startsWith("animate-") || c.startsWith("stagger-")) {
+          el.classList.remove(c);
+        }
+      });
+    });
+
     try {
-      const dataUrl = await toPng(element, {
+      // 4. Generate PNG from the clone (not the wrapper)
+      const dataUrl = await toPng(clone, {
         backgroundColor: "#ffffff",
-        width: 720,
         style: {
-          width: "720px",
-          margin: "0px",
           padding: "32px",
           borderRadius: "0px",
           boxShadow: "none",
@@ -114,6 +144,8 @@ export default function PublicResultSearchPage() {
     } catch (err) {
       console.error("Error generating marksheet image:", err);
     } finally {
+      // 5. Clean up the wrapper from the DOM
+      document.body.removeChild(wrapper);
       setDownloading(null);
     }
   };
