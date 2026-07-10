@@ -106,7 +106,9 @@ export default function PublicResultSearchPage() {
     clone.style.position = "relative";
     clone.style.top = "0px";
     clone.style.left = "0px";
-    clone.style.width = "100%";
+    clone.style.width = "720px";
+    clone.style.minWidth = "720px";
+    clone.style.maxWidth = "720px";
 
     // 3. Append to DOM
     wrapper.appendChild(clone);
@@ -123,6 +125,13 @@ export default function PublicResultSearchPage() {
       });
     });
 
+    // Strip lazy-loading and add crossorigin to image elements in the clone to prevent CORS canvas tainting
+    clone.querySelectorAll("img").forEach((img) => {
+      img.removeAttribute("loading");
+      img.setAttribute("loading", "eager");
+      img.setAttribute("crossorigin", "anonymous");
+    });
+
     // Disable dark mode temporarily on document root during capture to prevent dark theme inversion
     const htmlElement = document.documentElement;
     const bodyElement = document.body;
@@ -135,6 +144,7 @@ export default function PublicResultSearchPage() {
       // 4. Generate PNG from the clone (not the wrapper)
       const dataUrl = await toPng(clone, {
         backgroundColor: "#ffffff",
+        fontEmbedCSS: "", // Skip font embedding to prevent mobile Safari freezes/blank renders
         style: {
           padding: "32px",
           borderRadius: "0px",

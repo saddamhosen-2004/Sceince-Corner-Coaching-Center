@@ -95,14 +95,16 @@ export default function PublicExamSchedulePage() {
     container.style.pointerEvents = "none";
 
     const wrapper = document.createElement("div");
-    wrapper.style.width = "1024px";
+    wrapper.style.width = "768px";
     
     // 2. Clone the element
     const clone = routineRef.current.cloneNode(true) as HTMLElement;
     clone.style.position = "relative";
     clone.style.top = "0px";
     clone.style.left = "0px";
-    clone.style.width = "100%";
+    clone.style.width = "768px";
+    clone.style.minWidth = "768px";
+    clone.style.maxWidth = "768px";
     
     // 3. Append to DOM
     wrapper.appendChild(clone);
@@ -125,6 +127,13 @@ export default function PublicExamSchedulePage() {
       });
     });
 
+    // Strip lazy-loading and add crossorigin to image elements in the clone to prevent CORS canvas tainting
+    clone.querySelectorAll("img").forEach((img) => {
+      img.removeAttribute("loading");
+      img.setAttribute("loading", "eager");
+      img.setAttribute("crossorigin", "anonymous");
+    });
+
     // Disable dark mode temporarily on document root during capture to prevent dark theme inversion
     const htmlElement = document.documentElement;
     const bodyElement = document.body;
@@ -137,6 +146,7 @@ export default function PublicExamSchedulePage() {
       // 5. Generate PNG from the clone (not the wrapper)
       const dataUrl = await toPng(clone, {
         cacheBust: true,
+        fontEmbedCSS: "", // Skip font embedding to prevent mobile Safari freezes/blank renders
         backgroundColor: "#f8fafc",
         style: {
           padding: "24px",
