@@ -291,6 +291,8 @@ export default function AdminSettingsPage() {
     } finally {
       setSavingPrivacy(false);
     }
+  };
+
   /* ── Hero Section Text Actions ── */
   const saveHeroText = async () => {
     setSavingHeroText(true);
