@@ -238,65 +238,116 @@ export default function DirectorsPage() {
             <p className="text-slate-400 text-sm">পরিচালক তালিকা লোড হচ্ছে...</p>
           </div>
         ) : directors.length > 0 ? (
-          <div className="overflow-x-auto" dir="ltr">
-            <table className="w-full text-left border-collapse text-sm" dir="ltr">
-              <thead>
-                <tr className="bg-slate-50 border-b border-slate-200/60 text-slate-500 font-semibold">
-                  <th className="px-6 py-4">নাম</th>
-                  <th className="px-6 py-4">পদবী</th>
-                  <th className="px-6 py-4">মোবাইল নম্বর</th>
-                  <th className="px-6 py-4">ঠিকানা</th>
-                  <th className="px-6 py-4">পদক্ষেপ</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100">
-                {directors.map((director) => (
-                  <tr key={director.id} className="text-slate-700 hover:bg-slate-50/50">
-                    <td className="px-6 py-4 font-bold text-slate-900">
-                      <div className="flex items-center justify-start gap-3">
-                        <div className="relative w-8 h-8 rounded-full overflow-hidden bg-slate-100 border border-slate-200 shrink-0">
-                          {director.photo_url ? (
-                            <Image
-                              src={director.photo_url}
-                              alt={director.name}
-                              fill
-                              className="object-cover"
-                            />
-                          ) : (
-                            <div className="w-full h-full flex items-center justify-center text-slate-300">
-                              <User className="w-4 h-4" />
-                            </div>
-                          )}
-                        </div>
-                        <span>{director.name}</span>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 text-slate-500 font-semibold">{director.position}</td>
-                    <td className="px-6 py-4 font-mono text-slate-600">{director.phone}</td>
-                    <td className="px-6 py-4 text-slate-500">{director.address}</td>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center justify-start gap-2">
-                        <button
-                          onClick={() => openEditModal(director)}
-                          className="p-1.5 hover:bg-teal-50 hover:text-teal-600 rounded-lg text-slate-400 transition-colors"
-                          title="সম্পাদনা করুন"
-                        >
-                          <Pencil className="w-4 h-4" />
-                        </button>
-                        <button
-                          onClick={() => confirmDelete(director)}
-                          className="p-1.5 hover:bg-rose-50 hover:text-rose-600 rounded-lg text-slate-400 transition-colors"
-                          title="মুছে ফেলুন"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      </div>
-                    </td>
+          <>
+            {/* Desktop Table view */}
+            <div className="hidden md:block overflow-x-auto" dir="ltr">
+              <table className="w-full text-left border-collapse text-sm" dir="ltr">
+                <thead>
+                  <tr className="bg-slate-50 border-b border-slate-200/60 text-slate-500 font-semibold">
+                    <th className="px-6 py-4">নাম</th>
+                    <th className="px-6 py-4">পদবী</th>
+                    <th className="px-6 py-4">মোবাইল নম্বর</th>
+                    <th className="px-6 py-4">ঠিকানা</th>
+                    <th className="px-6 py-4">পদক্ষেপ</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {directors.map((director) => (
+                    <tr key={director.id} className="text-slate-700 hover:bg-slate-50/50">
+                      <td className="px-6 py-4 font-bold text-slate-900">
+                        <div className="flex items-center justify-start gap-3">
+                          <div className="relative w-8 h-8 rounded-full overflow-hidden bg-slate-100 border border-slate-200 shrink-0">
+                            {director.photo_url ? (
+                              <Image
+                                src={director.photo_url}
+                                alt={director.name}
+                                fill
+                                className="object-cover"
+                              />
+                            ) : (
+                              <div className="w-full h-full flex items-center justify-center text-slate-300">
+                                <User className="w-4 h-4" />
+                              </div>
+                            )}
+                          </div>
+                          <span>{director.name}</span>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 text-slate-500 font-semibold">{director.position}</td>
+                      <td className="px-6 py-4 font-mono text-slate-600">{director.phone}</td>
+                      <td className="px-6 py-4 text-slate-500">{director.address}</td>
+                      <td className="px-6 py-4">
+                        <div className="flex items-center justify-start gap-2">
+                          <button
+                            onClick={() => openEditModal(director)}
+                            className="p-1.5 hover:bg-teal-50 hover:text-teal-600 rounded-lg text-slate-400 transition-colors cursor-pointer"
+                            title="সম্পাদনা করুন"
+                          >
+                            <Pencil className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={() => confirmDelete(director)}
+                            className="p-1.5 hover:bg-rose-50 hover:text-rose-600 rounded-lg text-slate-400 transition-colors cursor-pointer"
+                            title="মুছে ফেলুন"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Mobile Card list view */}
+            <div className="md:hidden divide-y divide-slate-100">
+              {directors.map((director) => (
+                <div key={director.id} className="p-4 flex gap-4 text-left">
+                  {/* Photo */}
+                  <div className="w-16 h-16 rounded-xl overflow-hidden relative bg-slate-100 shrink-0 border border-slate-100">
+                    {director.photo_url ? (
+                      <Image
+                        src={director.photo_url}
+                        alt={director.name}
+                        fill
+                        className="object-cover"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-slate-300">
+                        <User className="w-8 h-8" />
+                      </div>
+                    )}
+                  </div>
+                  {/* Info */}
+                  <div className="flex-1 min-w-0 flex flex-col justify-between">
+                    <div>
+                      <h4 className="font-bold text-slate-900 text-sm truncate">{director.name}</h4>
+                      <p className="text-[11px] text-teal-700 font-semibold mt-0.5 truncate">{director.position}</p>
+                      <p className="text-[11px] text-slate-500 font-mono mt-1">{director.phone}</p>
+                      <p className="text-[11px] text-slate-400 mt-0.5 truncate">{director.address}</p>
+                    </div>
+                    <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-50 mt-2">
+                      <button
+                        onClick={() => openEditModal(director)}
+                        className="p-1.5 hover:bg-teal-50 hover:text-teal-600 rounded-lg text-slate-400 transition-colors cursor-pointer"
+                        title="সম্পাদনা করুন"
+                      >
+                        <Pencil className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={() => confirmDelete(director)}
+                        className="p-1.5 hover:bg-rose-50 hover:text-rose-600 rounded-lg text-slate-400 transition-colors cursor-pointer"
+                        title="মুছে ফেলুন"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </>
         ) : (
           <div className="py-20 text-center text-slate-400 text-sm">
             পরিচালনা পর্ষদে এখনও কোনো পরিচালক যুক্ত করা হয়নি।

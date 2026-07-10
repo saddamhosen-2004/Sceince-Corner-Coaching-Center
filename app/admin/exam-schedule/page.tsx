@@ -342,7 +342,8 @@ export default function AdminExamSchedulePage() {
                 </div>
               </div>
 
-              <div className="overflow-x-auto">
+              {/* Desktop Table View */}
+              <div className="hidden md:block overflow-x-auto">
                 <table className="w-full text-xs text-left">
                   <thead>
                     <tr className="text-slate-400 font-semibold border-b border-slate-100">
@@ -398,6 +399,57 @@ export default function AdminExamSchedulePage() {
                     ))}
                   </tbody>
                 </table>
+              </div>
+
+              {/* Mobile Card List View */}
+              <div className="md:hidden divide-y divide-slate-100">
+                {slotList.map(slot => (
+                  <div key={slot.id} className="p-4 space-y-3 text-left">
+                    <div className="flex items-center justify-between">
+                      <span className="px-2.5 py-1 bg-teal-50 border border-teal-100 text-teal-700 rounded-lg text-[10px] font-semibold">
+                        {slot.batches?.name || "—"}
+                      </span>
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-teal-50 text-teal-700 rounded-md text-[10px] font-semibold font-mono">
+                        <Clock className="w-3.5 h-3.5 text-teal-600 shrink-0" />
+                        {formatTime(slot.start_time) || "—"}
+                      </span>
+                    </div>
+                    <div className="space-y-1">
+                      <h4 className="font-bold text-slate-900 text-sm">
+                        বিষয়: {slot.subjects?.name || "—"}
+                      </h4>
+                      <p className="text-xs text-slate-500">
+                        তারিখ: {formatDate(slot.exam_date)}
+                      </p>
+                      {slot.venue && (
+                        <p className="text-xs text-slate-500">
+                          স্থান/কক্ষ: {slot.venue}
+                        </p>
+                      )}
+                      {slot.notes && (
+                        <p className="text-xs text-slate-400 italic">
+                          নোট: {slot.notes}
+                        </p>
+                      )}
+                    </div>
+                    <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-50">
+                      <button
+                        onClick={() => openEdit(slot)}
+                        className="p-1.5 hover:bg-slate-100 hover:text-teal-600 text-slate-400 rounded-lg transition-colors cursor-pointer"
+                        title="সম্পাদনা"
+                      >
+                        <Pencil className="w-3.5 h-3.5" />
+                      </button>
+                      <button
+                        onClick={() => { setSlotToDelete(slot); setDeleteOpen(true); }}
+                        className="p-1.5 hover:bg-rose-50 hover:text-rose-600 text-slate-400 rounded-lg transition-colors cursor-pointer"
+                        title="মুছুন"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
           ))}

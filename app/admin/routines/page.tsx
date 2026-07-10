@@ -304,7 +304,8 @@ export default function RoutinesPage() {
         </div>
       ) : routines.length > 0 ? (
         <div className="bg-white border border-slate-200/60 rounded-2xl shadow-xs overflow-hidden">
-          <div className="overflow-x-auto">
+          {/* Desktop Table View */}
+          <div className="hidden md:block overflow-x-auto">
             <table className="w-full text-left border-collapse text-xs">
               <thead>
                 <tr className="bg-slate-50 border-b border-slate-200 text-slate-500 font-semibold">
@@ -362,6 +363,53 @@ export default function RoutinesPage() {
                 ))}
               </tbody>
             </table>
+          </div>
+
+          {/* Mobile Card List View */}
+          <div className="md:hidden divide-y divide-slate-100">
+            {routines.map((routine) => (
+              <div key={routine.id} className="p-4 space-y-3 text-left">
+                <div className="flex items-center justify-between">
+                  <span className="px-2.5 py-1 bg-teal-50 border border-teal-100 text-teal-700 rounded-lg text-[10px] font-semibold">
+                    {routine.batches?.name || "N/A"}
+                  </span>
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-teal-50 text-teal-700 rounded-md text-[10px] font-semibold font-mono">
+                    <Clock className="w-3 h-3 text-teal-600 shrink-0" />
+                    {routine.time}
+                  </span>
+                </div>
+                <div className="space-y-1">
+                  <h4 className="font-bold text-slate-900 text-sm">
+                    বিষয়: {routine.subjects?.name || "N/A"}
+                  </h4>
+                  <p className="text-xs text-slate-500">
+                    শিক্ষক: {routine.teachers?.name || "N/A"}
+                  </p>
+                </div>
+                <div className="flex items-center justify-between pt-2 border-t border-slate-50">
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-slate-100 text-slate-800 rounded-md text-[10px] font-semibold">
+                    <CalendarDays className="w-3.5 h-3.5 text-slate-500 shrink-0" />
+                    {routine.day_of_week}
+                  </span>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => openEditModal(routine)}
+                      className="p-1.5 hover:bg-slate-100 text-indigo-600 rounded-lg transition-all cursor-pointer"
+                      title="সম্পাদনা"
+                    >
+                      <Pencil className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={() => openDeleteConfirm(routine)}
+                      className="p-1.5 hover:bg-slate-100 text-rose-600 rounded-lg transition-all cursor-pointer"
+                      title="মুছে ফেলুন"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       ) : (

@@ -201,49 +201,90 @@ export default function BatchesPage() {
             <p className="text-slate-400 text-sm">ব্যাচ তালিকা লোড হচ্ছে...</p>
           </div>
         ) : batches.length > 0 ? (
-          <div className="overflow-x-auto" dir="ltr">
-            <table className="w-full text-left border-collapse text-sm" dir="ltr">
-              <thead>
-                <tr className="bg-slate-50 border-b border-slate-200/60 text-slate-500 font-semibold">
-                  <th className="px-6 py-4">ব্যাচের নাম</th>
-                  <th className="px-6 py-4">শুরুর সময়</th>
-                  <th className="px-6 py-4">শেষের সময়</th>
-                  <th className="px-6 py-4">ধারণক্ষমতা</th>
-                  <th className="px-6 py-4">পদক্ষেপ</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100">
-                {batches.map((batch) => (
-                  <tr key={batch.id} className="text-slate-700 hover:bg-slate-50/50">
-                    <td className="px-6 py-4 font-bold text-slate-900">{batch.name}</td>
-                    <td className="px-6 py-4 text-slate-500">{batch.start_time}</td>
-                    <td className="px-6 py-4 text-slate-500">{batch.end_time}</td>
-                    <td className="px-6 py-4 font-semibold text-slate-800">
-                      {batch.capacity.toLocaleString("bn-BD")} জন
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center justify-start gap-2">
-                        <button
-                          onClick={() => openEditModal(batch)}
-                          className="p-1.5 hover:bg-teal-50 hover:text-teal-600 rounded-lg text-slate-400 transition-colors"
-                          title="সম্পাদনা করুন"
-                        >
-                          <Pencil className="w-4 h-4" />
-                        </button>
-                        <button
-                          onClick={() => confirmDelete(batch)}
-                          className="p-1.5 hover:bg-rose-50 hover:text-rose-600 rounded-lg text-slate-400 transition-colors"
-                          title="মুছে ফেলুন"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      </div>
-                    </td>
+          <>
+            {/* Desktop Table view */}
+            <div className="hidden md:block overflow-x-auto" dir="ltr">
+              <table className="w-full text-left border-collapse text-sm" dir="ltr">
+                <thead>
+                  <tr className="bg-slate-50 border-b border-slate-200/60 text-slate-500 font-semibold">
+                    <th className="px-6 py-4">ব্যাচের নাম</th>
+                    <th className="px-6 py-4">শুরুর সময়</th>
+                    <th className="px-6 py-4">শেষের সময়</th>
+                    <th className="px-6 py-4">ধারণক্ষমতা</th>
+                    <th className="px-6 py-4">পদক্ষেপ</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {batches.map((batch) => (
+                    <tr key={batch.id} className="text-slate-700 hover:bg-slate-50/50">
+                      <td className="px-6 py-4 font-bold text-slate-900">{batch.name}</td>
+                      <td className="px-6 py-4 text-slate-500">{batch.start_time}</td>
+                      <td className="px-6 py-4 text-slate-500">{batch.end_time}</td>
+                      <td className="px-6 py-4 font-semibold text-slate-800">
+                        {batch.capacity.toLocaleString("bn-BD")} জন
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="flex items-center justify-start gap-2">
+                          <button
+                            onClick={() => openEditModal(batch)}
+                            className="p-1.5 hover:bg-teal-50 hover:text-teal-600 rounded-lg text-slate-400 transition-colors cursor-pointer"
+                            title="সম্পাদনা করুন"
+                          >
+                            <Pencil className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={() => confirmDelete(batch)}
+                            className="p-1.5 hover:bg-rose-50 hover:text-rose-600 rounded-lg text-slate-400 transition-colors cursor-pointer"
+                            title="মুছে ফেলুন"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Mobile Card list view */}
+            <div className="md:hidden divide-y divide-slate-100">
+              {batches.map((batch) => (
+                <div key={batch.id} className="p-4 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <h4 className="font-bold text-slate-900 text-sm">{batch.name}</h4>
+                    <span className="px-2.5 py-0.5 bg-teal-50 border border-teal-100 text-teal-700 rounded-lg text-xs font-semibold">
+                      {batch.capacity.toLocaleString("bn-BD")} জন
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between text-xs text-slate-500">
+                    <div>
+                      <span className="font-semibold">শুরুর সময়:</span> {batch.start_time}
+                    </div>
+                    <div>
+                      <span className="font-semibold">শেষের সময়:</span> {batch.end_time}
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-50">
+                    <button
+                      onClick={() => openEditModal(batch)}
+                      className="p-1.5 hover:bg-teal-50 hover:text-teal-600 rounded-lg text-slate-400 transition-colors cursor-pointer"
+                      title="সম্পাদনা করুন"
+                    >
+                      <Pencil className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={() => confirmDelete(batch)}
+                      className="p-1.5 hover:bg-rose-50 hover:text-rose-600 rounded-lg text-slate-400 transition-colors cursor-pointer"
+                      title="মুছে ফেলুন"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </>
         ) : (
           <div className="py-20 text-center text-slate-400 text-sm">
             কোন ব্যাচ তৈরি করা হয়নি। নতুন ব্যাচ তৈরি করতে উপরে ক্লিক করুন।
