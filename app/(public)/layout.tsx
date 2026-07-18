@@ -16,7 +16,7 @@ export default function PublicLayout({
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [logoUrl, setLogoUrl] = useState<string | null>(null);
   const [hidePublicStudents, setHidePublicStudents] = useState<boolean>(false);
-  const [siteTitle, setSiteTitle] = useState<string>("মানবিক কলেজ কোচিং সেন্টার");
+  const [siteTitle, setSiteTitle] = useState<string>("বিজ্ঞান কলেজ কোচিং সেন্টার");
 
   useEffect(() => {
     const supabase = createClient();
@@ -30,7 +30,7 @@ export default function PublicLayout({
           const favicon = data.find(s => s.key === "favicon_url")?.value || null;
           const hideStudents = data.find(s => s.key === "hide_public_students")?.value === "true";
           
-          const title = data.find(s => s.key === "site_title")?.value || "মানবিক কলেজ কোচিং সেন্টার";
+          const title = data.find(s => s.key === "site_title")?.value || "বিজ্ঞান কলেজ কোচিং সেন্টার";
           setLogoUrl(logo);
           setHidePublicStudents(hideStudents);
           setSiteTitle(title);
@@ -322,7 +322,7 @@ export default function PublicLayout({
             </div>
             <p className="text-xs font-bold text-white">{siteTitle}</p>
             <p className="text-[10px]" style={{ color: "#E2E8F0" }}>
-              এইচএসসি মানবিক (কলা) শাখার শিক্ষার্থীদের জন্য একটি বিশেষায়িত কোচিং সেন্টার
+              এইচএসসি বিজ্ঞান শাখার শিক্ষার্থীদের জন্য একটি বিশেষায়িত কোচিং সেন্টার
             </p>
             <p className="text-[10px] pt-2" style={{ color: "rgba(226, 232, 240, 0.7)" }}>
               &copy; {new Date().getFullYear()} {siteTitle}। সর্বস্বত্ব সংরক্ষিত।

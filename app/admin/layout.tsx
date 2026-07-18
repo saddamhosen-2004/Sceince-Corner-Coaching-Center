@@ -45,7 +45,7 @@ export default function AdminLayout({
   const [userEmail, setUserEmail] = useState<string | null>(null);
   const [loggingOut, setLoggingOut] = useState(false);
   const [logoUrl, setLogoUrl] = useState<string | null>(null);
-  const [siteTitle, setSiteTitle] = useState<string>("মানবিক কলেজ কোচিং সেন্টার");
+  const [siteTitle, setSiteTitle] = useState<string>("বিজ্ঞান কলেজ কোচিং সেন্টার");
 
   useEffect(() => {
     // Get logged-in user email
@@ -68,7 +68,7 @@ export default function AdminLayout({
         if (data) {
           const logo = data.find(s => s.key === "logo_url")?.value || null;
           const favicon = data.find(s => s.key === "favicon_url")?.value || null;
-          const title = data.find(s => s.key === "site_title")?.value || "মানবিক কলেজ কোচিং সেন্টার";
+          const title = data.find(s => s.key === "site_title")?.value || "বিজ্ঞান কলেজ কোচিং সেন্টার";
           setLogoUrl(logo);
           setSiteTitle(title);
 

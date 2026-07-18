@@ -52,8 +52,8 @@ export default function PublicHomePage() {
   const [heroBannerUrl, setHeroBannerUrl] = useState("/images/hero_banner.png");
   const [isBannerLoaded, setIsBannerLoaded] = useState(false);
   const [heroBadge, setHeroBadge] = useState("এইচএসসি প্রস্তুতি ২০২৬");
-  const [heroHeading, setHeroHeading] = useState("মানবিক বিভাগের জন্য ত্রিশালের সেরা কলেজ কোচিং সেন্টার");
-  const [heroDescription, setHeroDescription] = useState("বাংলা, ইংরেজি, ইতিহাস, যুক্তিবিদ্যা, পৌরনীতি, অর্থনীতি ও সমাজবিজ্ঞানসহ মানবিক বিভাগের সকল বিষয়ের বিশেষায়িত ও মানসম্মত শিক্ষাদান।");
+  const [heroHeading, setHeroHeading] = useState("বিজ্ঞান বিভাগের জন্য ত্রিশালের সেরা কলেজ কোচিং সেন্টার");
+  const [heroDescription, setHeroDescription] = useState("পদার্থবিজ্ঞান, রসায়ন, জীববিজ্ঞান, উচ্চতর গণিত, বাংলা, ইংরেজি ও আইসিটিসহ বিজ্ঞান বিভাগের সকল বিষয়ের বিশেষায়িত ও মানসম্মত শিক্ষাদান।");
 
   useEffect(() => {
     const supabaseClient = createClient();
@@ -114,8 +114,8 @@ export default function PublicHomePage() {
   const features = [
     {
       icon: BookOpen,
-      title: "বিশেষায়িত মানবিক গাইডেন্স",
-      desc: "এইচএসসি মানবিক শাখার সাধারণ ও ঐচ্ছিক সকল বিষয়ের জন্য আলাদা টিচার গাইডেন্স।",
+      title: "বিশেষায়িত বিজ্ঞান গাইডেন্স",
+      desc: "এইচএসসি বিজ্ঞান শাখার পদার্থবিজ্ঞান, রসায়ন, জীববিজ্ঞান ও উচ্চতর গণিতের জন্য আলাদা শিক্ষক গাইডেন্স।",
       color: "#3B6FA8",
       bg: "rgba(59,111,168,0.08)",
     },
@@ -299,7 +299,7 @@ export default function PublicHomePage() {
         <div className="text-center space-y-2 animate-fade-in-up">
           <h2 className="text-2xl font-bold" style={{ color: "#1E2B40" }}>আমাদের অনন্য সেবাসমূহ</h2>
           <p className="text-slate-400 text-xs max-w-lg mx-auto leading-relaxed">
-            এইচএসসি পরীক্ষায় মানবিক বিভাগের শিক্ষার্থীদের শতভাগ জিপিএ-৫ অর্জনের লক্ষ্যে আধুনিক ও বৈজ্ঞানিক শিক্ষা পদ্ধতি।
+            এইচএসসি পরীক্ষায় বিজ্ঞান বিভাগের শিক্ষার্থীদের শতভাগ জিপিএ-৫ অর্জনের লক্ষ্যে আধুনিক ও বৈজ্ঞানিক শিক্ষা পদ্ধতি।
           </p>
         </div>
 

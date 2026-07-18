@@ -51,8 +51,8 @@ export default function AdminSettingsPage() {
   const [savingPrivacy, setSavingPrivacy] = useState(false);
 
   // Site Title State
-  const [siteTitle, setSiteTitle] = useState("মানবিক কলেজ কোচিং সেন্টার");
-  const [currentSiteTitle, setCurrentSiteTitle] = useState("মানবিক কলেজ কোচিং সেন্টার");
+  const [siteTitle, setSiteTitle] = useState("বিজ্ঞান কলেজ কোচিং সেন্টার");
+  const [currentSiteTitle, setCurrentSiteTitle] = useState("বিজ্ঞান কলেজ কোচিং সেন্টার");
   const [savingSiteTitle, setSavingSiteTitle] = useState(false);
 
   // Hero Section Text State
